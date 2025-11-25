@@ -20,9 +20,14 @@ model User {
   createdAt  DateTime  @default(now()) @map("created_at")
   lastLogin  DateTime? @map("last_login")
   isActive   Boolean   @default(true) @map("is_active")
+  votePoints Int       @default(0) @map("vote_points")
 
   sessions       Session[]
   activityLogs   ActivityLog[]
+  orders         Order[]
+  votes          Vote[]
+  forumTopics    ForumTopic[]
+  forumPosts     ForumPost[]
 
   @@map("users")
   @@index([username])
@@ -90,4 +95,158 @@ enum Role {
   OWNER
 
   @@map("role")
+}
+
+// ==================== BOUTIQUE ====================
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String   @db.Text
+  price       Float
+  oldPrice    Float?   @map("old_price")
+  category    ProductCategory
+  image       String?  @db.VarChar(500)
+  discount    Int?     @default(0)
+  featured    Boolean  @default(false)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  orders      OrderItem[]
+
+  @@map("products")
+  @@index([category])
+}
+
+enum ProductCategory {
+  VIP
+  IMMOBILIER
+  PACK_DEPART
+  SERVICE
+  VEHICULE
+
+  @@map("product_category")
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  userId        Int         @map("user_id")
+  total         Float
+  status        OrderStatus @default(PENDING)
+  paypalOrderId String?     @map("paypal_order_id") @db.VarChar(255)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@map("orders")
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  orderId   Int   @map("order_id")
+  productId Int   @map("product_id")
+  price     Float
+  quantity  Int   @default(1)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  DELIVERED
+  CANCELLED
+  REFUNDED
+
+  @@map("order_status")
+}
+
+// ==================== FORUM ====================
+
+model ForumCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  slug        String   @unique @db.VarChar(100)
+  icon        String?  @db.VarChar(50)
+  orderIndex  Int      @default(0) @map("order_index")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  topics ForumTopic[]
+
+  @@map("forum_categories")
+}
+
+model ForumTopic {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  authorId   Int      @map("author_id")
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  isPinned   Boolean  @default(false) @map("is_pinned")
+  isLocked   Boolean  @default(false) @map("is_locked")
+  views      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  posts    ForumPost[]
+
+  @@map("forum_topics")
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model ForumPost {
+  id        Int      @id @default(autoincrement())
+  topicId   Int      @map("topic_id")
+  authorId  Int      @map("author_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  topic  ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  author User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("forum_posts")
+  @@index([topicId])
+  @@index([authorId])
+}
+
+// ==================== VOTES ====================
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  site      String   @db.VarChar(50)
+  points    Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("votes")
+  @@index([userId])
+  @@index([site])
+}
+
+model VoteReward {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String   @db.Text
+  pointsCost  Int      @map("points_cost")
+  icon        String?  @db.VarChar(50)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("vote_rewards")
 }

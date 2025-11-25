@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, LogOut, Menu, X, Shield, Crown } from 'lucide-react';
+import { MessageCircle, User, LogOut, Menu, X, Shield, Crown, ShoppingCart, MessagesSquare, Vote } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
 export default function Navbar() {
@@ -68,7 +68,10 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Accueil' },
-    { href: '/reglement', label: 'Règlement' },
+    { href: '/boutique', label: 'Boutique', icon: ShoppingCart, highlight: true },
+    { href: '/forum', label: 'Forum', icon: MessagesSquare },
+    { href: '/vote', label: 'Vote', icon: Vote },
+    { href: '/reglement', label: 'Reglement' },
     { href: '/contact', label: 'Contact' },
   ];
 
@@ -111,27 +114,37 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {/* Nav Links */}
-            <div className="flex items-center gap-6">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <motion.span
-                    whileHover={{ y: -2 }}
-                    className={`relative font-medium transition-colors ${
-                      pathname === link.href
-                        ? 'text-primary'
-                        : 'text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    {link.label}
-                    {pathname === link.href && (
-                      <motion.div
-                        layoutId="navbar-indicator"
-                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
-                      />
-                    )}
-                  </motion.span>
-                </Link>
-              ))}
+            <div className="flex items-center gap-5">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link key={link.href} href={link.href}>
+                    <motion.span
+                      whileHover={{ y: -2 }}
+                      className={`relative font-medium transition-colors flex items-center gap-1.5 ${
+                        link.highlight
+                          ? pathname === link.href
+                            ? 'text-[#ff6b35]'
+                            : 'text-[#ff6b35]/80 hover:text-[#ff6b35]'
+                          : pathname === link.href
+                          ? 'text-primary'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      {Icon && <Icon size={16} />}
+                      {link.label}
+                      {pathname === link.href && (
+                        <motion.div
+                          layoutId="navbar-indicator"
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full ${
+                            link.highlight ? 'bg-[#ff6b35]' : 'bg-primary'
+                          }`}
+                        />
+                      )}
+                    </motion.span>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Auth Section */}
@@ -212,19 +225,25 @@ export default function Navbar() {
           >
             <div className="absolute inset-0 bg-dark-bg/95 backdrop-blur-xl pt-24 px-6">
               <div className="flex flex-col gap-6">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.href} 
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span className={`text-2xl font-bold ${
-                      pathname === link.href ? 'text-primary' : 'text-white'
-                    }`}>
-                      {link.label}
-                    </span>
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link 
+                      key={link.href} 
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className={`text-2xl font-bold flex items-center gap-3 ${
+                        link.highlight
+                          ? pathname === link.href ? 'text-[#ff6b35]' : 'text-[#ff6b35]/80'
+                          : pathname === link.href ? 'text-primary' : 'text-white'
+                      }`}>
+                        {Icon && <Icon size={24} />}
+                        {link.label}
+                      </span>
+                    </Link>
+                  );
+                })}
                 
                 <div className="border-t border-white/10 pt-6 mt-4">
                   {isLoggedIn ? (
