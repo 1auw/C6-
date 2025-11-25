@@ -3,9 +3,9 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
 // GET - Recuperer les points de vote de l'utilisateur
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const user = await getCurrentUser(req);
+    const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Non autorise' },

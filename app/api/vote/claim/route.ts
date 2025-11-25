@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 // POST - Reclamer une recompense
 export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser(req);
+    const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Non autorise' },
