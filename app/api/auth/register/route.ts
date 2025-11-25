@@ -1,129 +1,146 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { prisma } from "@/lib/db";
+import { hashPassword, logActivity, createToken } from "@/lib/auth";
+import { cookies } from "next/headers";
 
-// Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
-
-// Fonction helper pour faire une requête avec retry
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  maxRetries = 2,
-  delay = 1000
-): Promise<Response> {
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      const response = await fetch(url, options);
-      const text = await response.text();
-      
-      // Si InfinityFree bloque, retry avec un délai
-      if (text.includes("aes.js") || text.includes("<html>") || text.includes("<script")) {
-        if (i < maxRetries) {
-          console.log(`⚠️ Blocage détecté, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-      }
-      
-      // Retourner une réponse avec le texte
-      return new Response(text, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
-    } catch (error) {
-      if (i < maxRetries) {
-        console.log(`⚠️ Erreur, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw new Error("Tous les retries ont échoué");
-}
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    console.log("📤 Envoi au backend PHP:", body);
+    // Validation des champs
+    const username = (body.username || '').trim();
+    const email = (body.email || '').trim().toLowerCase();
+    const password = body.password || '';
+    const passwordConfirm = body.password_confirm || '';
 
-    // Utiliser le proxy PHP pour contourner InfinityFree
-    const headers = getApiHeaders();
-    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/register.php");
-    
-    console.log("🔗 URL proxy appelée:", proxyUrl);
-    
-    // Appel via le proxy PHP (qui fait un curl interne, pas de blocage)
-    const response = await fetch(proxyUrl, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(body),
+    const errors: string[] = [];
+
+    // Validation du nom d'utilisateur
+    if (!username) {
+      errors.push('Le nom d\'utilisateur est requis');
+    } else if (username.length < 3 || username.length > 50) {
+      errors.push('Le nom d\'utilisateur doit contenir entre 3 et 50 caractères');
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      errors.push('Le nom d\'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores');
+    }
+
+    // Validation de l'email
+    if (!email) {
+      errors.push('L\'email est requis');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push('Email invalide');
+    }
+
+    // Validation du mot de passe
+    if (!password) {
+      errors.push('Le mot de passe est requis');
+    } else if (password.length < 8) {
+      errors.push('Le mot de passe doit contenir au moins 8 caractères');
+    } else if (password !== passwordConfirm) {
+      errors.push('Les mots de passe ne correspondent pas');
+    }
+
+    if (errors.length > 0) {
+      return NextResponse.json(
+        { success: false, errors },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier si le nom d'utilisateur existe déjà
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email },
+        ],
+      },
     });
 
-    console.log("📥 Statut réponse PHP:", response.status);
-
-    const textResponse = await response.text();
-    
-    // LOG COMPLET pour debug
-    console.log("📥 Statut HTTP:", response.status);
-    console.log("📥 Longueur réponse:", textResponse.length);
-    console.log("📥 Début réponse:", textResponse.substring(0, 500));
-    console.log("📥 Headers réponse:", Object.fromEntries(response.headers.entries()));
-
-    // Vérifier si InfinityFree a bloqué la requête (retourne du HTML/JS)
-    const isBlocked = textResponse.includes("aes.js") || 
-                      textResponse.includes("<html>") || 
-                      textResponse.includes("<script") ||
-                      textResponse.includes("InfinityFree") ||
-                      textResponse.trim().startsWith("<");
-
-    if (isBlocked) {
-      console.error("❌ BLOQUÉ PAR INFINITYFREE - Réponse complète:", textResponse);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Le serveur bloque la requête. Vérifiez les logs serveur pour plus de détails.",
-          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
-        },
-        { status: 500 }
-      );
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return NextResponse.json(
+          { success: false, error: 'Ce nom d\'utilisateur est déjà pris' },
+          { status: 400 }
+        );
+      }
+      if (existingUser.email === email) {
+        return NextResponse.json(
+          { success: false, error: 'Cet email est déjà utilisé' },
+          { status: 400 }
+        );
+      }
     }
 
-    let data;
-    try {
-      data = JSON.parse(textResponse);
-    } catch (e) {
-      console.error("❌ Erreur parsing JSON - Réponse complète:", textResponse);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Réponse invalide du serveur",
-          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
-        },
-        { status: 500 }
-      );
-    }
+    // Hasher le mot de passe
+    const passwordHash = await hashPassword(password);
 
-    console.log("📥 Réponse PHP (parsed):", data);
+    // Créer l'utilisateur
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: passwordHash,
+        role: 'USER',
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+      },
+    });
 
-    // Créer la réponse Next.js
-    const nextResponse = NextResponse.json(data);
+    // Logger l'activité
+    const ipAddress = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    await logActivity('user_registered', `Username: ${username}`, user.id, ipAddress);
 
-    // Transférer les cookies de session depuis PHP
-    const setCookieHeader = response.headers.get("set-cookie");
-    if (setCookieHeader) {
-      nextResponse.headers.set("set-cookie", setCookieHeader);
-    }
+    // Créer un token de session
+    const token = createToken(user.id);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 jours
 
-    return nextResponse;
+    // Créer la session dans la BDD
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        sessionToken: token,
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        expiresAt,
+      },
+    });
+
+    // Définir le cookie
+    const cookieStore = await cookies();
+    cookieStore.set('session_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires: expiresAt,
+      path: '/',
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Compte créé avec succès !',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    console.error("❌ Erreur globale:", error);
+    console.error('Erreur /api/auth/register:', error);
     return NextResponse.json(
-      { success: false, error: "Erreur serveur: " + (error instanceof Error ? error.message : String(error)) },
+      { success: false, error: 'Erreur lors de la création du compte' },
       { status: 500 }
     );
   }
 }
-

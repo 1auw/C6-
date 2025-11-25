@@ -187,7 +187,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Section Admin - visible uniquement pour les admins */}
-          {user.role === "admin" && (
+          {(user.role === "ADMIN" || user.role === "admin") && (
             <div className="mt-8">
               <h2 className="text-2xl font-bold text-white mb-4">
                 🛡️ Panel Administration

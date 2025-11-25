@@ -1,129 +1,113 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { prisma } from "@/lib/db";
+import { verifyPassword, logActivity, createToken } from "@/lib/auth";
+import { cookies } from "next/headers";
 
-// Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
-
-// Fonction helper pour faire une requête avec retry
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  maxRetries = 2,
-  delay = 1000
-): Promise<Response> {
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      const response = await fetch(url, options);
-      const text = await response.text();
-      
-      // Si InfinityFree bloque, retry avec un délai
-      if (text.includes("aes.js") || text.includes("<html>") || text.includes("<script")) {
-        if (i < maxRetries) {
-          console.log(`⚠️ Blocage détecté, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-      }
-      
-      // Retourner une réponse avec le texte
-      return new Response(text, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
-    } catch (error) {
-      if (i < maxRetries) {
-        console.log(`⚠️ Erreur, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw new Error("Tous les retries ont échoué");
-}
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    console.log("🔐 Tentative de connexion:", { email: body.email });
+    const login = (body.login || body.email || '').trim();
+    const password = body.password || '';
 
-    // Utiliser le proxy PHP pour contourner InfinityFree
-    const headers = getApiHeaders();
-    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/login.php");
-    
-    console.log("🔗 URL proxy appelée:", proxyUrl);
-    
-    // Appel via le proxy PHP (qui fait un curl interne, pas de blocage)
-    const response = await fetch(proxyUrl, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(body),
+    if (!login || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Identifiant et mot de passe requis' },
+        { status: 400 }
+      );
+    }
+
+    // Chercher l'utilisateur par username ou email
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: login },
+          { email: login.toLowerCase() },
+        ],
+      },
     });
 
-    console.log("📥 Statut réponse PHP:", response.status);
-
-    const textResponse = await response.text();
-    
-    // LOG COMPLET pour debug
-    console.log("📥 Statut HTTP:", response.status);
-    console.log("📥 Longueur réponse:", textResponse.length);
-    console.log("📥 Début réponse:", textResponse.substring(0, 500));
-
-    // Vérifier si InfinityFree a bloqué la requête
-    const isBlocked = textResponse.includes("aes.js") || 
-                      textResponse.includes("<html>") || 
-                      textResponse.includes("<script") ||
-                      textResponse.includes("InfinityFree") ||
-                      textResponse.trim().startsWith("<");
-
-    if (isBlocked) {
-      console.error("❌ BLOQUÉ PAR INFINITYFREE - Réponse complète:", textResponse);
+    if (!user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Le serveur bloque la requête. Vérifiez les logs serveur pour plus de détails.",
-          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
-        },
-        { status: 500 }
+        { success: false, error: 'Identifiants incorrects' },
+        { status: 401 }
       );
     }
 
-    let data;
-    try {
-      data = JSON.parse(textResponse);
-    } catch (e) {
-      console.error("❌ Erreur parsing JSON - Réponse complète:", textResponse);
+    // Vérifier si le compte est actif
+    if (!user.isActive) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Réponse invalide du serveur",
-          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
-        },
-        { status: 500 }
+        { success: false, error: 'Compte désactivé' },
+        { status: 403 }
       );
     }
 
-    console.log("📥 Réponse PHP (parsed):", data);
-
-    // Créer la réponse Next.js
-    const nextResponse = NextResponse.json(data);
-
-    // Transférer les cookies de session depuis PHP
-    const setCookieHeader = response.headers.get("set-cookie");
-    if (setCookieHeader) {
-      console.log("🍪 Cookie reçu:", setCookieHeader);
-      nextResponse.headers.set("set-cookie", setCookieHeader);
+    // Vérifier le mot de passe
+    const isValidPassword = await verifyPassword(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { success: false, error: 'Identifiants incorrects' },
+        { status: 401 }
+      );
     }
 
-    return nextResponse;
+    // Créer un token de session
+    const token = createToken(user.id);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 jours
+
+    const ipAddress = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+
+    // Créer la session dans la BDD
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        sessionToken: token,
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        expiresAt,
+      },
+    });
+
+    // Mettre à jour la dernière connexion
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
+
+    // Logger l'activité
+    await logActivity('user_login', 'User logged in', user.id, ipAddress);
+
+    // Définir le cookie
+    const cookieStore = await cookies();
+    cookieStore.set('session_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires: expiresAt,
+      path: '/',
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Connexion réussie !',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    console.error("❌ Erreur globale:", error);
+    console.error('Erreur /api/auth/login:', error);
     return NextResponse.json(
-      { success: false, error: "Erreur serveur: " + (error instanceof Error ? error.message : String(error)) },
+      { success: false, error: 'Erreur lors de la connexion' },
       { status: 500 }
     );
   }
 }
-

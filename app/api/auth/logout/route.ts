@@ -1,41 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
-// Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    // Utiliser le proxy PHP pour contourner InfinityFree
-    const cookies = request.headers.get("cookie");
-    const headers = getApiHeaders();
-    if (cookies) {
-      headers["Cookie"] = cookies;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session_token')?.value;
+
+    if (token) {
+      // Supprimer la session de la BDD
+      await prisma.session.deleteMany({
+        where: { sessionToken: token },
+      });
     }
-    
-    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/logout.php");
-    const response = await fetch(proxyUrl, {
-      method: "POST",
-      headers: headers,
+
+    // Supprimer le cookie
+    cookieStore.delete('session_token');
+
+    return NextResponse.json({
+      success: true,
+      message: 'Déconnexion réussie',
     });
-
-    const data = await response.json();
-
-    // Créer la réponse Next.js
-    const nextResponse = NextResponse.json(data);
-
-    // Transférer les cookies de session depuis PHP (suppression)
-    const setCookieHeader = response.headers.get("set-cookie");
-    if (setCookieHeader) {
-      nextResponse.headers.set("set-cookie", setCookieHeader);
-    }
-
-    return nextResponse;
   } catch (error) {
+    console.error('Erreur /api/auth/logout:', error);
     return NextResponse.json(
-      { success: false, error: "Erreur serveur" },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     );
   }
 }
-

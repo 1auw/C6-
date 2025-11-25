@@ -51,31 +51,7 @@ export default function RegisterPage() {
         credentials: "include",
       });
 
-      console.log("📥 Statut réponse:", res.status, res.statusText);
-      console.log("📥 Headers:", Object.fromEntries(res.headers.entries()));
-
-      const textResponse = await res.text();
-      console.log("📥 Réponse brute:", textResponse.substring(0, 500));
-      
-      let data;
-      
-      try {
-        data = JSON.parse(textResponse);
-        console.log("✅ Données parsées:", data);
-      } catch (e) {
-        // Si ce n'est pas du JSON, c'est probablement la protection InfinityFree
-        console.error("❌ Erreur parsing JSON:", e);
-        console.error("❌ Réponse complète:", textResponse);
-        
-        if (textResponse.includes("404")) {
-          setError("Fichier non trouvé. Vérifiez que les fichiers PHP sont bien uploadés.");
-        } else if (textResponse.includes("403")) {
-          setError("Accès refusé. Vérifiez les permissions des fichiers.");
-        } else {
-          setError(`Erreur serveur: ${textResponse.substring(0, 200)}`);
-        }
-        return;
-      }
+      const data = await res.json();
 
       if (data.success) {
         router.push("/profile");

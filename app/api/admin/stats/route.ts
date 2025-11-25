@@ -1,41 +1,75 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
-// Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const cookies = request.headers.get("cookie");
-    const headers = getApiHeaders();
-    if (cookies) {
-      headers["Cookie"] = cookies;
-    }
-
-    const proxyUrl = getApiUrl("proxy.php?endpoint=admin/stats.php");
-    const response = await fetch(proxyUrl, {
-      method: "GET",
-      headers: headers,
-    });
-
-    const textResponse = await response.text();
-    let data;
-
-    try {
-      data = JSON.parse(textResponse);
-    } catch (e) {
+    // Vérifier que l'utilisateur est admin
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
       return NextResponse.json(
-        { success: false, error: "Réponse invalide du serveur" },
-        { status: 500 }
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json(data);
+    if (currentUser.role !== "ADMIN") {
+      return NextResponse.json(
+        { success: false, error: "Accès non autorisé" },
+        { status: 403 }
+      );
+    }
+
+    // Calculer les statistiques
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [
+      totalUsers,
+      activeUsers,
+      admins,
+      totalLogs,
+      loginsToday,
+      registrationsToday,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.user.count({ where: { role: 'ADMIN' } }),
+      prisma.activityLog.count(),
+      prisma.activityLog.count({
+        where: {
+          action: 'user_login',
+          createdAt: { gte: today },
+        },
+      }),
+      prisma.activityLog.count({
+        where: {
+          action: 'user_registered',
+          createdAt: { gte: today },
+        },
+      }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      stats: {
+        total_users: totalUsers,
+        active_users: activeUsers,
+        admins: admins,
+        total_logs: totalLogs,
+        logins_today: loginsToday,
+        registrations_today: registrationsToday,
+      },
+    });
   } catch (error) {
+    console.error("Erreur /api/admin/stats:", error);
     return NextResponse.json(
       { success: false, error: "Erreur serveur" },
       { status: 500 }
     );
   }
 }
-

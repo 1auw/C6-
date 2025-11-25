@@ -64,5 +64,5 @@ Write-Host "2. Importez votre repository GitHub" -ForegroundColor White
 Write-Host "3. Configurez les variables d'environnement" -ForegroundColor White
 Write-Host "4. Déployez !" -ForegroundColor White
 Write-Host ""
-Write-Host "Voir DEPLOIEMENT_VERCEL.md pour plus de détails" -ForegroundColor Yellow
+Write-Host "Variables d'environnement requises : DATABASE_URL, JWT_SECRET" -ForegroundColor Yellow
 

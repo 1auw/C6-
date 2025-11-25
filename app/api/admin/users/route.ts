@@ -1,41 +1,63 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
-// Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const cookies = request.headers.get("cookie");
-    const headers = getApiHeaders();
-    if (cookies) {
-      headers["Cookie"] = cookies;
-    }
-
-    const proxyUrl = getApiUrl("proxy.php?endpoint=admin/users.php");
-    const response = await fetch(proxyUrl, {
-      method: "GET",
-      headers: headers,
-    });
-
-    const textResponse = await response.text();
-    let data;
-
-    try {
-      data = JSON.parse(textResponse);
-    } catch (e) {
+    // Vérifier que l'utilisateur est admin
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
       return NextResponse.json(
-        { success: false, error: "Réponse invalide du serveur" },
-        { status: 500 }
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json(data);
+    if (currentUser.role !== "ADMIN") {
+      return NextResponse.json(
+        { success: false, error: "Accès non autorisé" },
+        { status: 403 }
+      );
+    }
+
+    // Récupérer tous les utilisateurs
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        lastLogin: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Formater les données pour le frontend
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role.toLowerCase(),
+      is_active: user.isActive,
+      created_at: user.createdAt.toISOString(),
+      last_login: user.lastLogin?.toISOString() || null,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      users: formattedUsers,
+    });
   } catch (error) {
+    console.error("Erreur /api/admin/users:", error);
     return NextResponse.json(
       { success: false, error: "Erreur serveur" },
       { status: 500 }
     );
   }
 }
-

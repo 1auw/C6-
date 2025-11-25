@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
 
       const meData = await meRes.json();
 
-      if (!meData.success || meData.user.role !== "admin") {
+      if (!meData.success || (meData.user.role !== "ADMIN" && meData.user.role !== "admin")) {
         router.push("/");
         return;
       }
@@ -314,7 +314,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="text-gray-400">Backend</span>
-                <span className="text-white font-medium">PHP + MySQL</span>
+                <span className="text-white font-medium">Prisma + PostgreSQL</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-gray-400">Statut</span>

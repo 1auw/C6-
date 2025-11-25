@@ -1,50 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 
-// Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Récupérer les cookies de la requête Next.js
-    const cookies = request.headers.get("cookie");
-    
-    // Utiliser le proxy PHP pour contourner InfinityFree
-    const headers = getApiHeaders();
-    if (cookies) {
-      headers["Cookie"] = cookies;
-    }
-    
-    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/me.php");
-    const response = await fetch(proxyUrl, {
-      method: "GET",
-      headers: headers,
-    });
+    const user = await getCurrentUser();
 
-    const textResponse = await response.text();
-
-    let data;
-    try {
-      data = JSON.parse(textResponse);
-    } catch (e) {
-      // Si le parsing échoue, retourner une réponse 200 avec success: false
-      // pour éviter l'erreur 401 dans la console
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: "Non connecté" },
+        { success: false, error: 'Non connecté' },
         { status: 200 }
       );
     }
 
-    // Toujours retourner 200, même si le backend PHP retourne 401
-    // Cela évite l'erreur 401 dans la console du navigateur
-    // Le frontend vérifiera data.success pour savoir si l'utilisateur est connecté
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    console.error("❌ Erreur /me:", error);
+    console.error('Erreur /api/auth/me:', error);
     return NextResponse.json(
-      { success: false, error: "Erreur serveur" },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     );
   }
 }
-

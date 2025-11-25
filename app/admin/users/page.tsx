@@ -47,7 +47,7 @@ export default function AdminUsersPage() {
 
       const meData = await meRes.json();
 
-      if (!meData.success || meData.user.role !== "admin") {
+      if (!meData.success || (meData.user.role !== "ADMIN" && meData.user.role !== "admin")) {
         router.push("/");
         return;
       }

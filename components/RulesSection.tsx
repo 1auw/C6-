@@ -201,11 +201,6 @@ export default function RulesSection() {
 
   const filteredContent = getFilteredContent();
 
-  // Debug
-  console.log('Active category:', activeCategory);
-  console.log('Filtered content:', filteredContent);
-  console.log('Rules content keys:', Object.keys(rulesContent));
-
   const toggleSection = (index: number) => {
     const newOpenSections = new Set(openSections);
     if (newOpenSections.has(index)) {

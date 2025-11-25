@@ -1,0 +1,92 @@
+// Prisma Schema pour Central6RP
+// Base de données PostgreSQL (Supabase, Neon, etc.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique @db.VarChar(50)
+  email      String    @unique @db.VarChar(100)
+  password   String    @db.VarChar(255)
+  role       Role      @default(USER)
+  discordId  String?   @map("discord_id") @db.VarChar(100)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastLogin  DateTime? @map("last_login")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  sessions       Session[]
+  activityLogs   ActivityLog[]
+
+  @@map("users")
+  @@index([username])
+  @@index([email])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  sessionToken String   @unique @map("session_token") @db.VarChar(255)
+  ipAddress    String   @map("ip_address") @db.VarChar(45)
+  userAgent    String?  @map("user_agent") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  expiresAt    DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+  @@index([sessionToken])
+  @@index([userId])
+}
+
+model ActivityLog {
+  id        Int       @id @default(autoincrement())
+  userId    Int?      @map("user_id")
+  action    String    @db.VarChar(100)
+  details   String?   @db.Text
+  ipAddress String    @map("ip_address") @db.VarChar(45)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("activity_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Rule {
+  id         Int      @id @default(autoincrement())
+  category   String   @db.VarChar(50)
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("rules")
+  @@index([category])
+}
+
+model ServerStat {
+  id          Int      @id @default(autoincrement())
+  playersOnline Int    @default(0) @map("players_online")
+  maxPlayers  Int      @default(32) @map("max_players")
+  lastUpdated DateTime @updatedAt @map("last_updated")
+
+  @@map("server_stats")
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+
+  @@map("role")
+}
