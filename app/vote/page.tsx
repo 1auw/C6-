@@ -253,7 +253,7 @@ export default function VotePage() {
             {/* Rewards */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                <Gift size={18} color: "#c084fc" />
+                <Gift size={18} color="#c084fc" />
                 <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>RECOMPENSES</span>
               </div>
 
