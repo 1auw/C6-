@@ -1,179 +1,134 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Hash, Lock, Plus, ChevronRight, Terminal, Folder, FileText } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
-const channels = [
-  { id: "annonces", name: "annonces", desc: "Annonces officielles du staff", locked: true },
-  { id: "general", name: "discussions-generales", desc: "Parlez de tout et de rien" },
-  { id: "suggestions", name: "suggestions", desc: "Proposez vos idees" },
-  { id: "support", name: "support-aide", desc: "Besoin d'aide ?" },
-  { id: "stories", name: "histoires-rp", desc: "Partagez vos moments RP" },
-  { id: "recrutement", name: "recrutement-orgs", desc: "Les orgs recrutent" },
+const SECTIONS = [
+  { id: "annonces", name: "Annonces", desc: "Mises a jour officielles", color: "#f59e0b" },
+  { id: "general", name: "Discussions", desc: "Parlez de tout", color: "#3b82f6" },
+  { id: "suggestions", name: "Suggestions", desc: "Vos idees", color: "#22c55e" },
+  { id: "support", name: "Support", desc: "Besoin d'aide ?", color: "#a855f7" },
+  { id: "stories", name: "Histoires RP", desc: "Vos moments", color: "#f97316" },
+  { id: "recrutement", name: "Recrutement", desc: "Rejoindre une org", color: "#ef4444" },
 ];
 
 export default function ForumPage() {
-  const [user, setUser] = useState<{ id: number; username: string } | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => data?.success && setUser(data.user))
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.success && setUser(d.user))
       .catch(() => {});
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0d1117]">
+    <div style={{ minHeight: "100vh", background: "#000" }}>
       <Navbar />
       
-      <div className="pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-4">
-          
-          {/* Terminal Header */}
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-            {/* Terminal Top Bar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#30363d] bg-[#0d1117]">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
-                <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
-                <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
-              </div>
-              <div className="flex-1 text-center">
-                <span className="text-[#8b949e] text-sm font-mono">central6rp@forum ~ </span>
-              </div>
-            </div>
+      <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 900, margin: "0 auto", padding: "100px 20px 60px" }}>
+        
+        <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Forum</h1>
+        <p style={{ color: "#666", marginBottom: 40 }}>Espace communautaire Central6RP</p>
 
-            {/* Terminal Content */}
-            <div className="p-6 font-mono text-sm">
-              {/* Welcome */}
-              <div className="text-[#8b949e] mb-6">
-                <span className="text-[#7ee787]">$</span> cat welcome.txt
-              </div>
-              <div className="bg-[#0d1117] border border-[#30363d] rounded p-4 mb-8">
-                <pre className="text-[#c9d1d9] whitespace-pre-wrap">
-{`╔═══════════════════════════════════════════════════╗
-║                                                   ║
-║   ██████╗███████╗███╗   ██╗████████╗██████╗  █████╗ ║
-║  ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██╔══██╗██╔══██╗║
-║  ██║     █████╗  ██╔██╗ ██║   ██║   ██████╔╝███████║║
-║  ██║     ██╔══╝  ██║╚██╗██║   ██║   ██╔══██╗██╔══██║║
-║  ╚██████╗███████╗██║ ╚████║   ██║   ██║  ██║██║  ██║║
-║   ╚═════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝║
-║                                                   ║
-║           FORUM COMMUNAUTAIRE - v1.0.0            ║
-║                                                   ║
-╚═══════════════════════════════════════════════════╝`}
-                </pre>
-              </div>
-
-              {/* Channels List */}
-              <div className="text-[#8b949e] mb-4">
-                <span className="text-[#7ee787]">$</span> ls -la /channels/
-              </div>
-              
-              <div className="space-y-1 mb-8">
-                <div className="text-[#8b949e] text-xs mb-2">total {channels.length}</div>
-                {channels.map((channel, i) => (
-                  <button
-                    key={channel.id}
-                    onClick={() => setSelected(channel.id)}
-                    className={`w-full flex items-center gap-4 px-3 py-2 rounded text-left transition-colors ${
-                      selected === channel.id 
-                        ? 'bg-[#1f6feb]/20 text-[#58a6ff]' 
-                        : 'hover:bg-[#21262d] text-[#c9d1d9]'
-                    }`}
-                  >
-                    <span className="text-[#8b949e] w-8">drwx</span>
-                    <span className="text-[#8b949e] w-20">{user?.username || 'guest'}</span>
-                    <span className="text-[#8b949e] w-12">{256 * (i + 1)}</span>
-                    <Folder size={14} className={channel.locked ? 'text-[#f85149]' : 'text-[#7ee787]'} />
-                    <span className="flex-1">#{channel.name}</span>
-                    {channel.locked && <Lock size={12} className="text-[#f85149]" />}
-                  </button>
-                ))}
+        {/* Sections */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {SECTIONS.map(s => (
+            <div
+              key={s.id}
+              onClick={() => setActive(active === s.id ? null : s.id)}
+              style={{
+                background: "#0a0a0a",
+                border: active === s.id ? `1px solid ${s.color}40` : "1px solid #1a1a1a",
+                borderRadius: 8,
+                padding: 20,
+                cursor: "pointer"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  background: `${s.color}15`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: s.color,
+                  fontSize: 18,
+                  fontWeight: 700
+                }}>
+                  #
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: "#fff", fontSize: 15, fontWeight: 500 }}>{s.name}</div>
+                  <div style={{ color: "#555", fontSize: 12 }}>{s.desc}</div>
+                </div>
+                <div style={{ color: "#333", fontSize: 20 }}>{active === s.id ? "−" : "+"}</div>
               </div>
 
-              {/* Selected Channel */}
-              {selected && (
-                <>
-                  <div className="text-[#8b949e] mb-4">
-                    <span className="text-[#7ee787]">$</span> cd /channels/{channels.find(c => c.id === selected)?.name}
-                  </div>
-                  <div className="text-[#8b949e] mb-4">
-                    <span className="text-[#7ee787]">$</span> cat README.md
-                  </div>
-                  <div className="bg-[#0d1117] border border-[#30363d] rounded p-4 mb-6">
-                    <div className="text-[#c9d1d9]">
-                      <span className="text-[#7ee787]"># </span>
-                      {channels.find(c => c.id === selected)?.name}
-                    </div>
-                    <div className="text-[#8b949e] mt-2">
-                      {channels.find(c => c.id === selected)?.desc}
-                    </div>
-                  </div>
-                  
-                  <div className="text-[#8b949e] mb-4">
-                    <span className="text-[#7ee787]">$</span> ls -la ./posts/
-                  </div>
-                  <div className="bg-[#0d1117] border border-[#30363d] rounded p-6 text-center">
-                    <FileText size={32} className="mx-auto text-[#30363d] mb-3" />
-                    <div className="text-[#8b949e] text-sm">
-                      total 0 - Aucun fichier dans ce repertoire
-                    </div>
-                    <div className="text-[#484f58] text-xs mt-2">
-                      Soyez le premier a creer un sujet !
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Create Post */}
-              <div className="mt-8 pt-6 border-t border-[#30363d]">
-                {user ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#7ee787]">$</span>
-                    <span className="text-[#c9d1d9]">./create-post.sh</span>
-                    <button className="ml-4 px-4 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-sm rounded transition-colors">
-                      Nouveau sujet
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#f85149]">$</span>
-                    <span className="text-[#f85149]">Permission denied: authentification requise</span>
-                    <Link href="/login">
-                      <button className="ml-4 px-4 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-sm rounded border border-[#30363d] transition-colors">
-                        Se connecter
+              {active === s.id && (
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #1a1a1a" }}>
+                  <div style={{ 
+                    textAlign: "center", 
+                    padding: 40, 
+                    background: "#050505", 
+                    borderRadius: 6,
+                    border: "1px dashed #222"
+                  }}>
+                    <div style={{ color: "#333", fontSize: 13, marginBottom: 12 }}>Aucun sujet dans cette section</div>
+                    {user ? (
+                      <button style={{
+                        padding: "8px 20px",
+                        background: s.color,
+                        color: "#000",
+                        border: "none",
+                        borderRadius: 6,
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: "pointer"
+                      }}>
+                        Creer le premier sujet
                       </button>
-                    </Link>
+                    ) : (
+                      <Link href="/login">
+                        <button style={{
+                          padding: "8px 20px",
+                          background: "#1a1a1a",
+                          color: "#666",
+                          border: "none",
+                          borderRadius: 6,
+                          fontSize: 13,
+                          cursor: "pointer"
+                        }}>
+                          Connectez-vous pour poster
+                        </button>
+                      </Link>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {/* Blinking Cursor */}
-              <div className="mt-6 flex items-center gap-2">
-                <span className="text-[#7ee787]">$</span>
-                <span className="w-2 h-4 bg-[#c9d1d9] animate-pulse"></span>
-              </div>
+                </div>
+              )}
             </div>
+          ))}
+        </div>
+
+        {/* Rules */}
+        <div style={{ 
+          marginTop: 40, 
+          background: "#0a0a0a", 
+          border: "1px solid #1a1a1a", 
+          borderRadius: 8, 
+          padding: 20 
+        }}>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Regles</div>
+          <div style={{ color: "#555", fontSize: 12, lineHeight: 1.8 }}>
+            • Respectez les autres membres<br/>
+            • Pas de spam ni publicite<br/>
+            • Restez dans le sujet<br/>
+            • Contenu approprie uniquement
           </div>
-
-          {/* Rules */}
-          <div className="mt-6 bg-[#161b22] border border-[#30363d] rounded-lg p-4 font-mono text-sm">
-            <div className="text-[#8b949e] mb-2">
-              <span className="text-[#7ee787]">$</span> cat /etc/rules.conf
-            </div>
-            <div className="text-[#8b949e] space-y-1">
-              <div><span className="text-[#f0883e]"># </span>Respectez tous les membres</div>
-              <div><span className="text-[#f0883e]"># </span>Pas de spam ni de pub</div>
-              <div><span className="text-[#f0883e]"># </span>Restez dans le sujet</div>
-              <div><span className="text-[#f0883e]"># </span>Pas de contenu NSFW</div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
