@@ -1,29 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, Gift, ExternalLink, Lock, Check, Star, Crown, Car, Zap, Target } from "lucide-react";
 import Link from "next/link";
 
-const SITES = [
-  { id: 1, name: "Liste-FiveM", pts: 2, cd: "12h", color: "#60a5fa" },
-  { id: 2, name: "Serveur Topliste", pts: 2, cd: "12h", color: "#34d399" },
-  { id: 3, name: "TopServeurs", pts: 3, cd: "24h", color: "#fbbf24" },
+const VOTE_SITES = [
+  { id: 1, name: "Liste-FiveM", points: 2, cooldown: "12 heures" },
+  { id: 2, name: "Serveur Topliste", points: 2, cooldown: "12 heures" },
+  { id: 3, name: "TopServeurs", points: 3, cooldown: "24 heures" },
 ];
 
 const REWARDS = [
-  { id: 1, name: "50K$", desc: "Cash boost", pts: 5, tier: "common", icon: Star },
-  { id: 2, name: "Vehicule", desc: "Modele exclusif", pts: 15, tier: "rare", icon: Car },
-  { id: 3, name: "VIP 7j", desc: "Acces temporaire", pts: 25, tier: "epic", icon: Crown },
-  { id: 4, name: "150K$", desc: "Mega cash", pts: 35, tier: "rare", icon: Star },
-  { id: 5, name: "Vehicule Luxe", desc: "Haut de gamme", pts: 50, tier: "epic", icon: Car },
-  { id: 6, name: "VIP 30j", desc: "1 mois complet", pts: 75, tier: "legendary", icon: Crown },
+  { id: 1, name: "Pack Argent", desc: "50 000$ en jeu", points: 5, rarity: "common" },
+  { id: 2, name: "Vehicule Standard", desc: "Un vehicule au choix du staff", points: 15, rarity: "rare" },
+  { id: 3, name: "VIP Bronze", desc: "7 jours d'acces VIP", points: 25, rarity: "rare" },
+  { id: 4, name: "Pack Or", desc: "150 000$ en jeu", points: 35, rarity: "epic" },
+  { id: 5, name: "Vehicule Premium", desc: "Un vehicule haut de gamme", points: 50, rarity: "epic" },
+  { id: 6, name: "VIP Gold", desc: "30 jours d'acces VIP complet", points: 75, rarity: "legendary" },
 ];
 
-const TIER_COLORS: Record<string, { bg: string; border: string; text: string; glow: string }> = {
-  common: { bg: "#1a1a2e", border: "#3a3a4e", text: "#888", glow: "none" },
-  rare: { bg: "#1a2a4e", border: "#3b82f6", text: "#60a5fa", glow: "0 0 20px #3b82f620" },
-  epic: { bg: "#2a1a4e", border: "#a855f7", text: "#c084fc", glow: "0 0 20px #a855f720" },
-  legendary: { bg: "#3a2a1a", border: "#fbbf24", text: "#fcd34d", glow: "0 0 30px #fbbf2430" },
+const RARITY_STYLES: Record<string, string> = {
+  common: "border-zinc-700",
+  rare: "border-blue-500/30",
+  epic: "border-purple-500/30",
+  legendary: "border-amber-500/30",
 };
 
 export default function VotePage() {
@@ -42,318 +41,175 @@ export default function VotePage() {
       .catch(() => {});
   }, []);
 
-  const claim = (r: typeof REWARDS[0]) => {
-    if (!user || points < r.pts) return;
-    setPoints(p => p - r.pts);
-    alert(r.name + " reclame !");
+  const handleClaim = (reward: typeof REWARDS[0]) => {
+    if (!user || points < reward.points) return;
+    setPoints(p => p - reward.points);
+    alert(`${reward.name} reclame avec succes !`);
   };
 
-  const nextReward = REWARDS.find(r => r.pts > points) || REWARDS[REWARDS.length - 1];
-  const progress = Math.min((points / nextReward.pts) * 100, 100);
-
   return (
-    <>
-      <style>{`*, *::before, *::after { animation: none !important; transition: none !important; }`}</style>
-      
-      <div style={{ minHeight: "100vh", background: "#050508" }}>
-        {/* Header */}
-        <div style={{
-          padding: "120px 24px 40px",
-          background: "linear-gradient(180deg, #0a0a12 0%, #050508 100%)",
-          borderBottom: "1px solid #1a1a2e"
-        }}>
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <Trophy size={28} color="#fbbf24" />
-              <span style={{ color: "#fbbf24", fontSize: 14, fontWeight: 700, letterSpacing: 2 }}>SYSTEME DE VOTE</span>
-            </div>
-            <h1 style={{ fontSize: 40, fontWeight: 900, color: "#fff", letterSpacing: -1 }}>
-              GAGNEZ DES <span style={{ color: "#fbbf24" }}>RECOMPENSES</span>
+    <div className="min-h-screen bg-[#09090b]">
+      {/* Ambient */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="relative">
+        {/* Hero */}
+        <div className="pt-32 pb-16 px-6 border-b border-zinc-800/50">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-amber-400 text-sm font-medium tracking-[0.2em] uppercase mb-4">
+              Soutenir le serveur
+            </p>
+            <h1 className="text-5xl md:text-6xl font-extralight text-white tracking-tight mb-6">
+              Votez & Gagnez
             </h1>
+            <p className="text-zinc-500 text-lg max-w-xl leading-relaxed">
+              Soutenez Central6RP en votant et recevez des recompenses exclusives.
+            </p>
           </div>
         </div>
 
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 24px 80px" }}>
-          {/* Points Display */}
-          <div style={{
-            background: "linear-gradient(135deg, #0a0a12 0%, #12121a 100%)",
-            border: "1px solid #1a1a2e",
-            borderRadius: 24,
-            padding: 40,
-            marginBottom: 40,
-            position: "relative",
-            overflow: "hidden"
-          }}>
-            {/* Background pattern */}
-            <div style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: "radial-gradient(circle at 1px 1px, #1a1a2e 1px, transparent 0)",
-              backgroundSize: "24px 24px",
-              opacity: 0.3
-            }} />
-
-            <div style={{ position: "relative" }}>
+        <div className="px-6 py-16">
+          <div className="max-w-5xl mx-auto">
+            {/* Points Display */}
+            <div className="mb-16">
               {user ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
-                  {/* Points circle */}
-                  <div style={{
-                    width: 140,
-                    height: 140,
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 0 60px #fbbf2440"
-                  }}>
-                    <div style={{ fontSize: 40, fontWeight: 900, color: "#000" }}>{points}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#000", opacity: 0.7 }}>POINTS</div>
-                  </div>
-
-                  {/* Progress */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ color: "#666", fontSize: 13 }}>Prochaine recompense</span>
-                      <span style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>{nextReward.name} ({nextReward.pts} pts)</span>
+                <div className="p-10 bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-zinc-800/50 rounded-3xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-zinc-500 text-sm mb-2">Vos points accumules</p>
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-6xl font-extralight text-white">{points}</span>
+                        <span className="text-zinc-600">points</span>
+                      </div>
                     </div>
-                    <div style={{
-                      height: 12,
-                      background: "#1a1a2e",
-                      borderRadius: 6,
-                      overflow: "hidden"
-                    }}>
-                      <div style={{
-                        width: `${progress}%`,
-                        height: "100%",
-                        background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
-                        borderRadius: 6
-                      }} />
-                    </div>
-                    <div style={{ color: "#555", fontSize: 12, marginTop: 8 }}>
-                      {points} / {nextReward.pts} points
+                    <div className="text-right">
+                      <p className="text-zinc-600 text-sm">Prochaine recompense</p>
+                      <p className="text-white text-lg mt-1">
+                        {REWARDS.find(r => r.points > points)?.name || "Maximum atteint"}
+                      </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: 20 }}>
-                  <Lock size={48} color="#444" style={{ marginBottom: 16 }} />
-                  <div style={{ color: "#666", fontSize: 16, marginBottom: 20 }}>Connectez-vous pour voter et gagner des points</div>
+                <div className="p-10 bg-zinc-900/30 border border-zinc-800/50 rounded-3xl text-center">
+                  <div className="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-6">
+                    <span className="text-3xl text-zinc-600">?</span>
+                  </div>
+                  <p className="text-zinc-500 mb-6">Connectez-vous pour voter et cumuler des points</p>
                   <Link href="/login">
-                    <button style={{
-                      padding: "14px 32px",
-                      background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                      color: "#000",
-                      border: "none",
-                      borderRadius: 12,
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: "pointer"
-                    }}>
-                      SE CONNECTER
+                    <button className="px-8 py-4 bg-white text-zinc-900 rounded-full font-medium hover:bg-zinc-100 transition-colors">
+                      Se connecter
                     </button>
                   </Link>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Two columns */}
-          <div style={{ display: "grid", gridTemplateColumns: "350px 1fr", gap: 24 }}>
-            {/* Vote Sites */}
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                <Target size={18} color="#60a5fa" />
-                <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>SITES DE VOTE</span>
-              </div>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {SITES.map(s => (
-                  <div key={s.id} style={{
-                    background: "#0a0a12",
-                    border: "1px solid #1a1a2e",
-                    borderRadius: 16,
-                    padding: 20
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                      <div style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        background: `${s.color}15`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                      }}>
-                        <Zap size={20} color={s.color} />
-                      </div>
-                      <div>
-                        <div style={{ color: "#fff", fontSize: 14, fontWeight: 600 }}>{s.name}</div>
-                        <div style={{ color: "#555", fontSize: 12 }}>+{s.pts} pts • Cooldown {s.cd}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => user && window.open("#", "_blank")}
-                      disabled={!user}
-                      style={{
-                        width: "100%",
-                        padding: 12,
-                        background: user ? s.color : "#1a1a2e",
-                        color: user ? "#000" : "#444",
-                        border: "none",
-                        borderRadius: 10,
-                        fontSize: 13,
-                        fontWeight: 700,
-                        cursor: user ? "pointer" : "not-allowed",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8
-                      }}
-                    >
-                      <ExternalLink size={14} />
-                      VOTER
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* How it works */}
-              <div style={{
-                marginTop: 24,
-                padding: 20,
-                background: "#0a0a12",
-                border: "1px solid #1a1a2e",
-                borderRadius: 16
-              }}>
-                <div style={{ color: "#555", fontSize: 12, marginBottom: 12 }}>COMMENT CA MARCHE</div>
-                {["Cliquez sur VOTER", "Validez sur le site", "Points credites auto", "Echangez les rewards"].map((s, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      background: "#1a1a2e",
-                      color: "#666",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center"
-                    }}>
-                      {i + 1}
-                    </div>
-                    <span style={{ color: "#888", fontSize: 13 }}>{s}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Rewards */}
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                <Gift size={18} color="#c084fc" />
-                <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>RECOMPENSES</span>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                {REWARDS.map(r => {
-                  const Icon = r.icon;
-                  const tier = TIER_COLORS[r.tier];
-                  const canClaim = user && points >= r.pts;
-
-                  return (
+            {/* Two columns layout */}
+            <div className="grid lg:grid-cols-5 gap-8">
+              {/* Vote Sites */}
+              <div className="lg:col-span-2">
+                <h2 className="text-white text-lg font-light mb-6">Sites de vote</h2>
+                <div className="space-y-4">
+                  {VOTE_SITES.map(site => (
                     <div
-                      key={r.id}
-                      style={{
-                        background: tier.bg,
-                        border: `2px solid ${canClaim ? tier.border : "#1a1a2e"}`,
-                        borderRadius: 16,
-                        padding: 20,
-                        boxShadow: canClaim ? tier.glow : "none",
-                        opacity: canClaim ? 1 : 0.6
-                      }}
+                      key={site.id}
+                      className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl"
                     >
-                      {/* Tier badge */}
-                      <div style={{
-                        display: "inline-block",
-                        padding: "4px 10px",
-                        background: `${tier.border}20`,
-                        borderRadius: 6,
-                        fontSize: 10,
-                        fontWeight: 800,
-                        color: tier.text,
-                        textTransform: "uppercase",
-                        letterSpacing: 1,
-                        marginBottom: 12
-                      }}>
-                        {r.tier}
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-light">{site.name}</h3>
+                        <span className="text-amber-400 text-sm font-medium">+{site.points} pts</span>
                       </div>
-
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                        <div style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          background: `${tier.border}20`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center"
-                        }}>
-                          <Icon size={22} color={tier.text} />
-                        </div>
-                        <div>
-                          <div style={{ color: "#fff", fontSize: 16, fontWeight: 700 }}>{r.name}</div>
-                          <div style={{ color: "#555", fontSize: 12 }}>{r.desc}</div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <div style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "6px 12px",
-                          background: "#1a1a2e",
-                          borderRadius: 8
-                        }}>
-                          <Star size={14} color="#fbbf24" />
-                          <span style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>{r.pts}</span>
-                        </div>
-
-                        {user ? (
-                          <button
-                            onClick={() => claim(r)}
-                            disabled={!canClaim}
-                            style={{
-                              padding: "8px 16px",
-                              background: canClaim ? tier.border : "#1a1a2e",
-                              color: canClaim ? "#000" : "#444",
-                              border: "none",
-                              borderRadius: 8,
-                              fontSize: 12,
-                              fontWeight: 700,
-                              cursor: canClaim ? "pointer" : "not-allowed",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6
-                            }}
-                          >
-                            {canClaim ? <><Check size={14} /> CLAIM</> : "LOCKED"}
-                          </button>
-                        ) : (
-                          <span style={{ color: "#444", fontSize: 11 }}>Connexion requise</span>
-                        )}
-                      </div>
+                      <p className="text-zinc-600 text-sm mb-4">Cooldown: {site.cooldown}</p>
+                      <button
+                        onClick={() => user && window.open("#", "_blank")}
+                        disabled={!user}
+                        className={`w-full py-3 rounded-xl text-sm font-medium transition-colors ${
+                          user
+                            ? "bg-white text-zinc-900 hover:bg-zinc-100"
+                            : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                        }`}
+                      >
+                        {user ? "Voter maintenant" : "Connexion requise"}
+                      </button>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+
+                {/* How it works */}
+                <div className="mt-8 p-6 bg-zinc-900/20 border border-zinc-800/30 rounded-2xl">
+                  <h3 className="text-zinc-400 text-sm font-medium mb-4">Comment ca marche ?</h3>
+                  <div className="space-y-3">
+                    {[
+                      "Cliquez sur un site de vote",
+                      "Validez votre vote sur le site externe",
+                      "Les points sont credites automatiquement",
+                      "Echangez vos points contre des recompenses"
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
+                          {i + 1}
+                        </span>
+                        <span className="text-zinc-500 text-sm">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Rewards */}
+              <div className="lg:col-span-3">
+                <h2 className="text-white text-lg font-light mb-6">Recompenses disponibles</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {REWARDS.map(reward => {
+                    const canClaim = user && points >= reward.points;
+                    const rarityLabel = reward.rarity === "legendary" ? "Legendaire" : 
+                                        reward.rarity === "epic" ? "Epique" :
+                                        reward.rarity === "rare" ? "Rare" : "Standard";
+                    
+                    return (
+                      <div
+                        key={reward.id}
+                        className={`p-6 bg-zinc-900/30 border rounded-2xl ${RARITY_STYLES[reward.rarity]} ${
+                          canClaim ? "opacity-100" : "opacity-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span className={`text-xs font-medium tracking-wider uppercase ${
+                            reward.rarity === "legendary" ? "text-amber-400" :
+                            reward.rarity === "epic" ? "text-purple-400" :
+                            reward.rarity === "rare" ? "text-blue-400" : "text-zinc-500"
+                          }`}>
+                            {rarityLabel}
+                          </span>
+                          <span className="text-white text-sm font-medium">{reward.points} pts</span>
+                        </div>
+                        
+                        <h3 className="text-white font-light text-lg mb-1">{reward.name}</h3>
+                        <p className="text-zinc-600 text-sm mb-6">{reward.desc}</p>
+                        
+                        <button
+                          onClick={() => handleClaim(reward)}
+                          disabled={!canClaim}
+                          className={`w-full py-3 rounded-xl text-sm font-medium transition-colors ${
+                            canClaim
+                              ? "bg-white text-zinc-900 hover:bg-zinc-100"
+                              : "bg-zinc-800/50 text-zinc-600 cursor-not-allowed"
+                          }`}
+                        >
+                          {canClaim ? "Reclamer" : user ? "Points insuffisants" : "Connexion requise"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

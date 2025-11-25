@@ -1,21 +1,56 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Hash, Users, Bell, MessageCircle, Lightbulb, HelpCircle, Lock, Plus, TrendingUp, Pin, Clock } from "lucide-react";
 import Link from "next/link";
 
-const CHANNELS = [
-  { id: "annonces", name: "annonces", desc: "News officielles", icon: Bell, color: "#fbbf24", pinned: 2, members: 156 },
-  { id: "general", name: "discussions", desc: "Parlez de tout", icon: MessageCircle, color: "#60a5fa", pinned: 0, members: 342 },
-  { id: "suggestions", name: "suggestions", desc: "Proposez vos idees", icon: Lightbulb, color: "#34d399", pinned: 1, members: 89 },
-  { id: "support", name: "support", desc: "Besoin d'aide ?", icon: HelpCircle, color: "#a78bfa", pinned: 3, members: 127 },
-  { id: "stories", name: "histoires-rp", desc: "Vos meilleurs moments", icon: TrendingUp, color: "#f472b6", pinned: 0, members: 234 },
-  { id: "recrutement", name: "recrutement", desc: "Rejoindre une org", icon: Users, color: "#f87171", pinned: 5, members: 78 },
+const SECTIONS = [
+  { 
+    id: "annonces", 
+    name: "Annonces Officielles", 
+    desc: "Les dernieres nouvelles et mises a jour du serveur",
+    topics: 12,
+    messages: 89
+  },
+  { 
+    id: "general", 
+    name: "Discussions Generales", 
+    desc: "Un espace libre pour echanger sur tous les sujets",
+    topics: 45,
+    messages: 234
+  },
+  { 
+    id: "suggestions", 
+    name: "Suggestions", 
+    desc: "Partagez vos idees pour ameliorer le serveur",
+    topics: 28,
+    messages: 156
+  },
+  { 
+    id: "support", 
+    name: "Support & Aide", 
+    desc: "Besoin d'assistance ? Notre communaute est la pour vous",
+    topics: 67,
+    messages: 312
+  },
+  { 
+    id: "rp", 
+    name: "Histoires & Recits RP", 
+    desc: "Partagez vos plus beaux moments et aventures",
+    topics: 34,
+    messages: 178
+  },
+  { 
+    id: "orga", 
+    name: "Organisations", 
+    desc: "Recrutement et actualites des factions",
+    topics: 19,
+    messages: 87
+  },
 ];
 
 export default function ForumPage() {
   const [user, setUser] = useState<any>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
@@ -24,255 +59,140 @@ export default function ForumPage() {
       .catch(() => {});
   }, []);
 
-  const totalMembers = CHANNELS.reduce((a, c) => a + c.members, 0);
+  const totalTopics = SECTIONS.reduce((a, s) => a + s.topics, 0);
+  const totalMessages = SECTIONS.reduce((a, s) => a + s.messages, 0);
 
   return (
-    <>
-      <style>{`*, *::before, *::after { animation: none !important; transition: none !important; }`}</style>
-      
-      <div style={{ minHeight: "100vh", background: "#050508" }}>
-        {/* Header */}
-        <div style={{
-          padding: "120px 24px 40px",
-          background: "linear-gradient(180deg, #0a0a12 0%, #050508 100%)",
-          borderBottom: "1px solid #1a1a2e"
-        }}>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 12, 
-                background: "linear-gradient(135deg, #1a5cff 0%, #3b82f6 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}>
-                <Hash size={24} color="#fff" />
+    <div className="min-h-screen bg-[#09090b]">
+      {/* Ambient */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="relative">
+        {/* Hero */}
+        <div className="pt-32 pb-16 px-6 border-b border-zinc-800/50">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-indigo-400 text-sm font-medium tracking-[0.2em] uppercase mb-4">
+              Communaute
+            </p>
+            <h1 className="text-5xl md:text-6xl font-extralight text-white tracking-tight mb-6">
+              Forum
+            </h1>
+            <p className="text-zinc-500 text-lg max-w-xl leading-relaxed mb-10">
+              Rejoignez notre communaute et participez aux discussions.
+            </p>
+
+            {/* Stats */}
+            <div className="flex gap-12">
+              <div>
+                <p className="text-3xl font-light text-white">{totalTopics}</p>
+                <p className="text-zinc-600 text-sm mt-1">Sujets</p>
               </div>
               <div>
-                <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>Forum Communautaire</h1>
-                <p style={{ color: "#555", fontSize: 14 }}>Rejoignez {totalMembers} membres actifs</p>
+                <p className="text-3xl font-light text-white">{totalMessages}</p>
+                <p className="text-zinc-600 text-sm mt-1">Messages</p>
+              </div>
+              <div>
+                <p className="text-3xl font-light text-white">247</p>
+                <p className="text-zinc-600 text-sm mt-1">Membres</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
-          {/* Stats bar */}
-          <div style={{
-            display: "flex",
-            gap: 24,
-            marginBottom: 40,
-            padding: "20px 24px",
-            background: "#0a0a12",
-            border: "1px solid #1a1a2e",
-            borderRadius: 16
-          }}>
-            {[
-              { label: "Channels", value: CHANNELS.length },
-              { label: "Membres", value: totalMembers },
-              { label: "Messages", value: "2.4K" },
-              { label: "En ligne", value: 47 },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: "center", flex: 1, borderRight: i < 3 ? "1px solid #1a1a2e" : "none" }}>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Channels */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {CHANNELS.map(ch => {
-              const Icon = ch.icon;
-              const isOpen = selected === ch.id;
-              
-              return (
-                <div 
-                  key={ch.id}
-                  style={{
-                    background: "#0a0a12",
-                    border: isOpen ? `1px solid ${ch.color}40` : "1px solid #1a1a2e",
-                    borderRadius: 16,
-                    overflow: "hidden"
-                  }}
+        {/* Sections */}
+        <div className="px-6 py-16">
+          <div className="max-w-4xl mx-auto space-y-3">
+            {SECTIONS.map((section, i) => (
+              <div
+                key={section.id}
+                className="group"
+              >
+                <button
+                  onClick={() => setExpanded(expanded === section.id ? null : section.id)}
+                  className="w-full text-left p-6 bg-zinc-900/30 hover:bg-zinc-900/50 border border-zinc-800/50 rounded-2xl transition-all duration-300"
                 >
-                  {/* Channel header */}
-                  <div
-                    onClick={() => setSelected(isOpen ? null : ch.id)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                      padding: 20,
-                      cursor: "pointer"
-                    }}
-                  >
-                    {/* Icon */}
-                    <div style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
-                      background: `${ch.color}15`,
-                      border: `1px solid ${ch.color}30`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center"
-                    }}>
-                      <Icon size={22} color={ch.color} />
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Hash size={16} color={ch.color} />
-                        <span style={{ color: "#fff", fontSize: 16, fontWeight: 700 }}>{ch.name}</span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <span className="text-zinc-700 text-xs font-mono">0{i + 1}</span>
+                        <h3 className="text-lg text-white font-light tracking-wide">
+                          {section.name}
+                        </h3>
                       </div>
-                      <div style={{ color: "#555", fontSize: 13, marginTop: 2 }}>{ch.desc}</div>
+                      <p className="text-zinc-600 text-sm pl-10">
+                        {section.desc}
+                      </p>
                     </div>
-
-                    {/* Stats */}
-                    <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                      {ch.pinned > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#fbbf24" }}>
-                          <Pin size={14} />
-                          <span style={{ fontSize: 12, fontWeight: 600 }}>{ch.pinned}</span>
-                        </div>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#555" }}>
-                        <Users size={14} />
-                        <span style={{ fontSize: 12 }}>{ch.members}</span>
+                    <div className="flex items-center gap-8 text-right">
+                      <div>
+                        <p className="text-white text-sm">{section.topics}</p>
+                        <p className="text-zinc-700 text-xs">sujets</p>
                       </div>
-                      <div style={{ 
-                        width: 24, 
-                        height: 24, 
-                        borderRadius: 6,
-                        background: "#1a1a2e",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#555",
-                        fontSize: 14,
-                        fontWeight: 700
-                      }}>
-                        {isOpen ? "−" : "+"}
+                      <div>
+                        <p className="text-white text-sm">{section.messages}</p>
+                        <p className="text-zinc-700 text-xs">messages</p>
+                      </div>
+                      <div className="w-8 h-8 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-600">
+                        <span className={`transition-transform duration-300 ${expanded === section.id ? 'rotate-45' : ''}`}>+</span>
                       </div>
                     </div>
                   </div>
+                </button>
 
-                  {/* Expanded content */}
-                  {isOpen && (
-                    <div style={{
-                      padding: "0 20px 20px",
-                      borderTop: "1px solid #1a1a2e"
-                    }}>
-                      {/* Empty state */}
-                      <div style={{
-                        marginTop: 20,
-                        padding: "48px 24px",
-                        background: "#08080c",
-                        borderRadius: 12,
-                        border: "1px dashed #2a2a3e",
-                        textAlign: "center"
-                      }}>
-                        <div style={{ 
-                          width: 64, 
-                          height: 64, 
-                          borderRadius: "50%", 
-                          background: `${ch.color}10`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          margin: "0 auto 16px"
-                        }}>
-                          <Icon size={28} color={ch.color} />
-                        </div>
-                        <div style={{ color: "#444", fontSize: 14, marginBottom: 20 }}>
-                          Aucun sujet dans #{ch.name}
-                        </div>
-                        {user ? (
-                          <button style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 8,
-                            padding: "12px 24px",
-                            background: ch.color,
-                            color: "#000",
-                            border: "none",
-                            borderRadius: 10,
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: "pointer"
-                          }}>
-                            <Plus size={16} />
-                            NOUVEAU SUJET
-                          </button>
-                        ) : (
-                          <Link href="/login">
-                            <button style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 8,
-                              padding: "12px 24px",
-                              background: "#1a1a2e",
-                              color: "#666",
-                              border: "none",
-                              borderRadius: 10,
-                              fontSize: 13,
-                              fontWeight: 600,
-                              cursor: "pointer"
-                            }}>
-                              <Lock size={14} />
-                              Connectez-vous pour poster
-                            </button>
-                          </Link>
-                        )}
+                {/* Expanded content */}
+                {expanded === section.id && (
+                  <div className="mt-3 p-8 bg-zinc-900/20 border border-zinc-800/30 rounded-2xl">
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-6">
+                        <span className="text-zinc-600 text-2xl">∅</span>
                       </div>
+                      <p className="text-zinc-600 mb-6">Aucun sujet pour le moment</p>
+                      
+                      {user ? (
+                        <button className="px-8 py-3 bg-white text-zinc-900 rounded-full text-sm font-medium hover:bg-zinc-100 transition-colors">
+                          Creer le premier sujet
+                        </button>
+                      ) : (
+                        <Link href="/login">
+                          <button className="px-8 py-3 bg-zinc-800 text-zinc-400 rounded-full text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors">
+                            Connectez-vous pour participer
+                          </button>
+                        </Link>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Rules */}
-          <div style={{
-            marginTop: 40,
-            padding: 24,
-            background: "#0a0a12",
-            border: "1px solid #1a1a2e",
-            borderRadius: 16
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#1a5cff" }} />
-              <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>REGLES DU FORUM</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {[
-                "Respectez les autres membres",
-                "Pas de spam ni publicite",
-                "Restez dans le sujet",
-                "Contenu approprie uniquement"
-              ].map((r, i) => (
-                <div key={i} style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 8,
-                  padding: "10px 14px",
-                  background: "#08080c",
-                  borderRadius: 8,
-                  color: "#666",
-                  fontSize: 13
-                }}>
-                  <Clock size={14} color="#1a5cff" />
-                  {r}
-                </div>
-              ))}
+        {/* Guidelines */}
+        <div className="px-6 pb-32">
+          <div className="max-w-4xl mx-auto">
+            <div className="p-8 bg-zinc-900/20 border border-zinc-800/30 rounded-2xl">
+              <h3 className="text-white font-light text-lg mb-6">Regles de la communaute</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  "Respectez tous les membres sans exception",
+                  "Pas de spam ni de contenu inapproprie",
+                  "Restez dans le sujet de chaque section",
+                  "Utilisez un langage correct et courtois"
+                ].map((rule, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <span className="w-6 h-6 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-600 text-xs">
+                      {i + 1}
+                    </span>
+                    <span className="text-zinc-500 text-sm">{rule}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

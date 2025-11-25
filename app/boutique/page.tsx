@@ -1,53 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, Lock, Sparkles, Zap, Crown, Home, Package, Wrench, Car } from "lucide-react";
 import Link from "next/link";
 
 const PRODUCTS = [
-  { id: 1, name: "Pack VIP Argent", desc: "Priorite connexion + reductions", price: 9.50, old: 10, cat: "VIP", hot: false },
-  { id: 2, name: "Pack VIP Or", desc: "File renforcee + salon Discord", price: 17.99, old: 19.99, cat: "VIP", hot: true },
-  { id: 3, name: "Pack VIP Platine", desc: "Avantages premium + events", price: 29.74, old: 34.99, cat: "VIP", hot: false },
-  { id: 4, name: "Pack VIP Diamant", desc: "Acces complet VIP", price: 39.99, old: 49.99, cat: "VIP", hot: true },
-  { id: 5, name: "Pack VIP Titan", desc: "Ultra premium 60 jours", price: 52.49, old: 69.99, cat: "VIP", hot: false },
-  { id: 6, name: "Pack VIP Omega", desc: "Offre ultime 90j", price: 64.99, old: 99.99, cat: "VIP", hot: true },
-  { id: 9, name: "Appart Vue Mer", desc: "Quartier premium", price: 35.99, old: 39.99, cat: "IMMO", hot: false },
-  { id: 10, name: "Maison + Garage", desc: "Garage double", price: 42.49, old: 49.99, cat: "IMMO", hot: false },
-  { id: 11, name: "Villa Luxe", desc: "Piscine + vue", price: 63.99, old: 79.99, cat: "IMMO", hot: true },
-  { id: 12, name: "Studio Centre", desc: "Centre-ville", price: 24.99, cat: "IMMO", hot: false },
-  { id: 15, name: "Starter Civil", desc: "Vehicule + tenue", price: 9.99, cat: "PACK", hot: false },
-  { id: 16, name: "Starter Entreprise", desc: "Business pack", price: 13.49, old: 14.99, cat: "PACK", hot: false },
-  { id: 17, name: "Starter Gang", desc: "Role criminel", price: 15.29, old: 16.99, cat: "PACK", hot: true },
-  { id: 18, name: "Pack Luxe", desc: "Haut de gamme", price: 21.24, old: 24.99, cat: "PACK", hot: false },
-  { id: 20, name: "Changement Nom", desc: "Nouvelle identite", price: 6.99, cat: "SERV", hot: false },
-  { id: 21, name: "Changement Plaque", desc: "Plaque custom", price: 4.99, cat: "SERV", hot: false },
-  { id: 23, name: "Reset Apparence", desc: "Nouveau look", price: 7.19, old: 7.99, cat: "SERV", hot: false },
-  { id: 24, name: "Clean Casier", desc: "Effacer casier RP", price: 8.49, old: 9.99, cat: "SERV", hot: true },
-  { id: 25, name: "Audi RS6", desc: "Break sportif", price: 16.19, old: 17.99, cat: "AUTO", hot: false },
-  { id: 26, name: "BMW M5 F90", desc: "Berline sport", price: 16.14, old: 18.99, cat: "AUTO", hot: false },
-  { id: 27, name: "Mercedes GT63", desc: "Coupe luxe", price: 16.99, old: 19.99, cat: "AUTO", hot: false },
-  { id: 28, name: "Audi R8 V10", desc: "Supercar", price: 17.59, old: 21.99, cat: "AUTO", hot: true },
-  { id: 29, name: "Lambo Huracan", desc: "Italienne", price: 19.99, old: 24.99, cat: "AUTO", hot: true },
-  { id: 31, name: "Porsche 911", desc: "Icone", price: 20.39, old: 23.99, cat: "AUTO", hot: true },
-  { id: 32, name: "Nissan GTR", desc: "Japonaise", price: 17.54, old: 19.49, cat: "AUTO", hot: false },
-  { id: 38, name: "Supra MK5", desc: "Drift king", price: 13.94, old: 15.49, cat: "AUTO", hot: false },
-  { id: 41, name: "Mustang GT", desc: "Muscle car", price: 13.49, old: 14.99, cat: "AUTO", hot: false },
-  { id: 44, name: "Ninja ZX-10R", desc: "Moto sport", price: 9.49, old: 9.99, cat: "AUTO", hot: false },
+  { id: 1, name: "VIP Argent", sub: "30 jours", desc: "Priorite de connexion et reductions exclusives", price: 9.50, old: 10, cat: "VIP" },
+  { id: 2, name: "VIP Or", sub: "30 jours", desc: "File prioritaire et acces salon Discord prive", price: 17.99, old: 19.99, cat: "VIP" },
+  { id: 3, name: "VIP Platine", sub: "30 jours", desc: "Avantages premium et acces aux events prives", price: 29.74, old: 34.99, cat: "VIP" },
+  { id: 4, name: "VIP Diamant", sub: "30 jours", desc: "Experience complete avec tous les avantages", price: 39.99, old: 49.99, cat: "VIP" },
+  { id: 5, name: "Appartement Vue Mer", sub: "Permanent", desc: "Residence de standing dans le quartier premium", price: 35.99, old: 39.99, cat: "IMMO" },
+  { id: 6, name: "Villa de Luxe", sub: "Permanent", desc: "Propriete d'exception avec piscine et vue", price: 63.99, old: 79.99, cat: "IMMO" },
+  { id: 7, name: "Penthouse Centre", sub: "Permanent", desc: "Dernier etage en plein coeur de ville", price: 54.99, cat: "IMMO" },
+  { id: 8, name: "Pack Starter", sub: "Unique", desc: "Vehicule et tenue pour bien demarrer", price: 9.99, cat: "PACK" },
+  { id: 9, name: "Pack Business", sub: "Unique", desc: "Tout pour lancer votre entreprise RP", price: 13.49, old: 14.99, cat: "PACK" },
+  { id: 10, name: "Pack Elite", sub: "Unique", desc: "Le pack ultime pour les vrais joueurs", price: 21.24, old: 24.99, cat: "PACK" },
+  { id: 11, name: "Lamborghini Huracan", sub: "Permanent", desc: "Supercar italienne pour les connaisseurs", price: 19.99, old: 24.99, cat: "AUTO" },
+  { id: 12, name: "Porsche 911 Turbo S", sub: "Permanent", desc: "L'icone intemporelle de la performance", price: 20.39, old: 23.99, cat: "AUTO" },
+  { id: 13, name: "Mercedes AMG GT63", sub: "Permanent", desc: "Le coupe 4 portes le plus desirable", price: 16.99, old: 19.99, cat: "AUTO" },
+  { id: 14, name: "BMW M5 Competition", sub: "Permanent", desc: "La berline sportive par excellence", price: 16.14, old: 18.99, cat: "AUTO" },
+  { id: 15, name: "Audi R8 V10 Plus", sub: "Permanent", desc: "Technologie et emotion a l'etat pur", price: 17.59, old: 21.99, cat: "AUTO" },
+  { id: 16, name: "Changement d'identite", sub: "Service", desc: "Nouveau nom, nouvelle vie", price: 6.99, cat: "SERV" },
 ];
 
-const CATS = [
-  { id: "TOUT", name: "TOUT", icon: Sparkles, color: "#fff" },
-  { id: "VIP", name: "VIP", icon: Crown, color: "#fbbf24" },
-  { id: "IMMO", name: "IMMO", icon: Home, color: "#34d399" },
-  { id: "PACK", name: "PACKS", icon: Package, color: "#a78bfa" },
-  { id: "SERV", name: "SERVICES", icon: Wrench, color: "#f472b6" },
-  { id: "AUTO", name: "VEHICULES", icon: Car, color: "#60a5fa" },
-];
+const CATEGORIES = ["TOUT", "VIP", "IMMO", "PACK", "AUTO", "SERV"];
 
 export default function BoutiquePage() {
   const [cat, setCat] = useState("TOUT");
   const [user, setUser] = useState<any>(null);
-  const [modal, setModal] = useState(false);
+  const [modal, setModal] = useState<typeof PRODUCTS[0] | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
@@ -56,244 +36,168 @@ export default function BoutiquePage() {
       .catch(() => {});
   }, []);
 
-  const isVisible = (p: typeof PRODUCTS[0]) => cat === "TOUT" || p.cat === cat;
-  const currentCat = CATS.find(c => c.id === cat);
+  const filtered = PRODUCTS.filter(p => cat === "TOUT" || p.cat === cat);
 
   return (
-    <>
-      <style>{`*, *::before, *::after { animation: none !important; transition: none !important; }`}</style>
-      
-      <div style={{ minHeight: "100vh", background: "#050508" }}>
-        {/* Hero Banner */}
-        <div style={{
-          position: "relative",
-          padding: "120px 24px 60px",
-          background: "linear-gradient(180deg, #0a0a12 0%, #050508 100%)",
-          borderBottom: "1px solid #1a1a2e",
-          overflow: "hidden"
-        }}>
-          {/* Grid pattern */}
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: "linear-gradient(rgba(26,92,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(26,92,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "60px 60px"
-          }} />
-          
-          <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <Zap size={28} color="#1a5cff" />
-              <span style={{ color: "#1a5cff", fontSize: 14, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>
-                Boutique Officielle
-              </span>
-            </div>
-            <h1 style={{ fontSize: 48, fontWeight: 900, color: "#fff", marginBottom: 8, letterSpacing: -1 }}>
-              CENTRAL<span style={{ color: "#1a5cff" }}>6</span>RP STORE
+    <div className="min-h-screen bg-[#09090b]">
+      {/* Ambient */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="relative">
+        {/* Hero */}
+        <div className="pt-32 pb-20 px-6">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-blue-400 text-sm font-medium tracking-[0.2em] uppercase mb-4">
+              Central6RP Store
+            </p>
+            <h1 className="text-5xl md:text-7xl font-extralight text-white tracking-tight mb-6">
+              La Boutique
             </h1>
-            <p style={{ color: "#666", fontSize: 16 }}>VIP, vehicules, packs et services premium</p>
+            <p className="text-zinc-500 text-lg max-w-xl leading-relaxed">
+              Decouvrez notre selection exclusive de vehicules, proprietes et avantages premium pour enrichir votre experience.
+            </p>
           </div>
         </div>
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 24px 80px" }}>
-          {/* Categories - Style Pills */}
-          <div style={{ 
-            display: "flex", 
-            gap: 8, 
-            marginBottom: 48,
-            padding: 8,
-            background: "#0a0a12",
-            borderRadius: 16,
-            border: "1px solid #1a1a2e",
-            width: "fit-content"
-          }}>
-            {CATS.map(c => {
-              const Icon = c.icon;
-              const active = cat === c.id;
-              return (
+        {/* Categories */}
+        <div className="px-6 mb-16">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex gap-1 p-1.5 bg-zinc-900/50 rounded-full w-fit border border-zinc-800/50">
+              {CATEGORIES.map(c => (
                 <button
-                  key={c.id}
-                  onClick={() => setCat(c.id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "12px 20px",
-                    borderRadius: 12,
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    letterSpacing: 1,
-                    background: active ? c.color : "transparent",
-                    color: active ? (c.id === "TOUT" ? "#000" : "#000") : "#666"
-                  }}
+                  key={c}
+                  onClick={() => setCat(c)}
+                  className={`px-6 py-2.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
+                    cat === c 
+                      ? "bg-white text-zinc-900" 
+                      : "text-zinc-400 hover:text-white"
+                  }`}
                 >
-                  <Icon size={16} />
-                  {c.name}
+                  {c === "TOUT" ? "Tout" : c === "IMMO" ? "Immobilier" : c === "AUTO" ? "Vehicules" : c === "SERV" ? "Services" : c}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
+        </div>
 
-          {/* Products Grid */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: 20
-          }}>
-            {PRODUCTS.map(p => {
-              const visible = isVisible(p);
-              const catData = CATS.find(c => c.id === p.cat);
-              const discount = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
-              
-              return (
+        {/* Products */}
+        <div className="px-6 pb-32">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((p, i) => (
                 <div
                   key={p.id}
-                  style={{
-                    display: visible ? "flex" : "none",
-                    flexDirection: "column",
-                    background: "#0a0a12",
-                    border: p.hot ? `2px solid ${catData?.color}50` : "1px solid #1a1a2e",
-                    borderRadius: 16,
-                    overflow: "hidden",
-                    position: "relative"
-                  }}
+                  className="group relative bg-zinc-900/30 backdrop-blur-sm rounded-2xl border border-zinc-800/50 overflow-hidden hover:border-zinc-700/50 transition-all duration-500"
                 >
-                  {/* Hot badge */}
-                  {p.hot && (
-                    <div style={{
-                      position: "absolute",
-                      top: 12,
-                      right: 12,
-                      padding: "4px 10px",
-                      background: catData?.color,
-                      borderRadius: 20,
-                      fontSize: 10,
-                      fontWeight: 800,
-                      color: "#000",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4
-                    }}>
-                      <Sparkles size={10} />
-                      HOT
+                  {/* Gradient top */}
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  {/* Discount badge */}
+                  {p.old && (
+                    <div className="absolute top-4 right-4 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                      <span className="text-emerald-400 text-xs font-medium">
+                        -{Math.round((1 - p.price / p.old) * 100)}%
+                      </span>
                     </div>
                   )}
 
-                  {/* Top bar with category */}
-                  <div style={{
-                    padding: "12px 16px",
-                    background: `${catData?.color}10`,
-                    borderBottom: `1px solid ${catData?.color}20`,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8
-                  }}>
-                    {catData?.icon && <catData.icon size={14} color={catData.color} />}
-                    <span style={{ fontSize: 11, fontWeight: 700, color: catData?.color, letterSpacing: 1 }}>
-                      {catData?.name}
-                    </span>
-                  </div>
+                  <div className="p-6">
+                    {/* Category */}
+                    <p className="text-zinc-600 text-xs font-medium tracking-[0.15em] uppercase mb-4">
+                      {p.cat === "IMMO" ? "Immobilier" : p.cat === "AUTO" ? "Vehicule" : p.cat === "SERV" ? "Service" : p.cat}
+                    </p>
 
-                  {/* Content */}
-                  <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column" }}>
-                    <h3 style={{ color: "#fff", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{p.name}</h3>
-                    <p style={{ color: "#555", fontSize: 13, marginBottom: 20 }}>{p.desc}</p>
-                    
+                    {/* Title */}
+                    <h3 className="text-xl text-white font-light mb-1 tracking-wide">
+                      {p.name}
+                    </h3>
+                    <p className="text-zinc-600 text-sm mb-4">{p.sub}</p>
+
+                    {/* Description */}
+                    <p className="text-zinc-500 text-sm leading-relaxed mb-8">
+                      {p.desc}
+                    </p>
+
                     {/* Price */}
-                    <div style={{ marginTop: "auto", marginBottom: 16 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                        <span style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>{p.price.toFixed(2)}</span>
-                        <span style={{ fontSize: 14, color: "#444" }}>EUR</span>
-                      </div>
+                    <div className="flex items-end gap-3 mb-6">
+                      <span className="text-3xl font-light text-white">{p.price.toFixed(2)}</span>
+                      <span className="text-zinc-600 text-sm mb-1">EUR</span>
                       {p.old && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                          <span style={{ fontSize: 13, color: "#444", textDecoration: "line-through" }}>{p.old.toFixed(2)} EUR</span>
-                          <span style={{ 
-                            padding: "2px 8px", 
-                            background: "#22c55e20", 
-                            color: "#22c55e", 
-                            fontSize: 11, 
-                            fontWeight: 700,
-                            borderRadius: 4
-                          }}>
-                            -{discount}%
-                          </span>
-                        </div>
+                        <span className="text-zinc-700 text-sm line-through mb-1">{p.old.toFixed(2)}</span>
                       )}
                     </div>
 
                     {/* Button */}
                     <button
-                      onClick={() => user ? alert("Achat: " + p.name) : setModal(true)}
-                      style={{
-                        width: "100%",
-                        padding: 14,
-                        borderRadius: 10,
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 13,
-                        fontWeight: 700,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8,
-                        background: user ? catData?.color : "#1a1a2e",
-                        color: user ? "#000" : "#555"
-                      }}
+                      onClick={() => user ? setModal(p) : setModal(p)}
+                      className="w-full py-4 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 bg-white text-zinc-900 hover:bg-zinc-100"
                     >
-                      {user ? <><ShoppingCart size={16} /> ACHETER</> : <><Lock size={16} /> CONNEXION REQUISE</>}
+                      {user ? "Acheter maintenant" : "Voir le produit"}
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Modal */}
-        {modal && (
+      {/* Modal */}
+      {modal && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setModal(null)}
+        >
           <div 
-            onClick={() => setModal(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.9)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 100
-            }}
+            className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md"
+            onClick={e => e.stopPropagation()}
           >
-            <div 
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: "#0a0a12",
-                border: "1px solid #1a1a2e",
-                borderRadius: 20,
-                padding: 32,
-                width: 380
-              }}
-            >
-              <Lock size={40} color="#1a5cff" style={{ marginBottom: 16 }} />
-              <h3 style={{ color: "#fff", fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Connexion requise</h3>
-              <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Connectez-vous pour effectuer un achat</p>
-              <div style={{ display: "flex", gap: 12 }}>
-                <Link href="/login" style={{ flex: 1 }}>
-                  <button style={{ width: "100%", padding: 14, background: "#1a5cff", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                    Connexion
+            <p className="text-zinc-600 text-xs font-medium tracking-[0.15em] uppercase mb-2">
+              {modal.cat === "IMMO" ? "Immobilier" : modal.cat === "AUTO" ? "Vehicule" : modal.cat === "SERV" ? "Service" : modal.cat}
+            </p>
+            <h3 className="text-2xl text-white font-light mb-2">{modal.name}</h3>
+            <p className="text-zinc-500 text-sm mb-6">{modal.desc}</p>
+            
+            <div className="flex items-end gap-3 mb-8">
+              <span className="text-4xl font-light text-white">{modal.price.toFixed(2)}</span>
+              <span className="text-zinc-600 mb-1">EUR</span>
+            </div>
+
+            {user ? (
+              <button 
+                onClick={() => { alert("Redirection vers PayPal..."); setModal(null); }}
+                className="w-full py-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
+              >
+                Payer avec PayPal
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-zinc-500 text-sm text-center mb-4">Connectez-vous pour finaliser votre achat</p>
+                <Link href="/login" className="block">
+                  <button className="w-full py-4 rounded-xl bg-white text-zinc-900 font-medium hover:bg-zinc-100 transition-colors">
+                    Se connecter
                   </button>
                 </Link>
-                <Link href="/register" style={{ flex: 1 }}>
-                  <button style={{ width: "100%", padding: 14, background: "#1a1a2e", color: "#fff", border: "1px solid #2a2a3e", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                    Inscription
+                <Link href="/register" className="block">
+                  <button className="w-full py-4 rounded-xl bg-zinc-800 text-white font-medium hover:bg-zinc-700 transition-colors border border-zinc-700">
+                    Creer un compte
                   </button>
                 </Link>
               </div>
-            </div>
+            )}
+
+            <button 
+              onClick={() => setModal(null)}
+              className="w-full mt-4 py-3 text-zinc-500 text-sm hover:text-white transition-colors"
+            >
+              Annuler
+            </button>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 }
