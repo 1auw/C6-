@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { ShoppingCart, Filter, Car, Home, Package, Wrench, Crown, X, Lock, Tag, Search, SlidersHorizontal, ArrowUpDown, ChevronDown } from "lucide-react";
+import { ShoppingCart, Car, Home, Package, Wrench, Crown, X, Lock, Search, SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
@@ -13,12 +13,10 @@ interface Product {
   oldPrice?: number;
   category: string;
   discount?: number;
-  featured?: boolean;
 }
 
 const products: Product[] = [
-  // VIP & RANGS
-  { id: 1, name: "Pack VIP Central6 Argent (30 jours)", description: "30 jours de rang ameliore, meilleure priorite de connexion et reduction legere sur certaines offres boutique.", price: 9.50, oldPrice: 10.00, category: "VIP", discount: 5, featured: true },
+  { id: 1, name: "Pack VIP Central6 Argent (30 jours)", description: "30 jours de rang ameliore, meilleure priorite de connexion et reduction legere sur certaines offres boutique.", price: 9.50, oldPrice: 10.00, category: "VIP", discount: 5 },
   { id: 2, name: "Pack VIP Central6 Or (30 jours)", description: "Rang premium avec file d'attente renforcee, salon dedie Discord et bonus RP visuel en jeu.", price: 17.99, oldPrice: 19.99, category: "VIP", discount: 10 },
   { id: 3, name: "Pack VIP Central6 Platine (30 jours)", description: "Rang tres haut de gamme, avantages accentues, priorites RP et events reserves.", price: 29.74, oldPrice: 34.99, category: "VIP", discount: 15 },
   { id: 4, name: "Pack VIP Central6 Diamant (30 jours)", description: "Rang d'elite, acces a la totalite des avantages VIP publics et bonus exclusifs serveurs.", price: 39.99, oldPrice: 49.99, category: "VIP", discount: 20 },
@@ -26,34 +24,26 @@ const products: Product[] = [
   { id: 6, name: "Pack VIP Central6 Galaxie (90 jours)", description: "90 jours de rang legendaire, privileges VIP etendus et presence mise en avant sur le serveur.", price: 59.49, oldPrice: 84.99, category: "VIP", discount: 30 },
   { id: 7, name: "Pack VIP Central6 Omega (90 jours)", description: "Offre ultime de Central6RP, 90 jours avec tous les avantages VIP existants et statut Omega exclusif.", price: 64.99, oldPrice: 99.99, category: "VIP", discount: 35 },
   { id: 8, name: "Pack VIP Central6 Bronze (30 jours)", description: "Acces VIP Central6 Bronze pendant 30 jours : file d'attente prioritaire legere, tag VIP Bronze et petit bonus de confort RP.", price: 4.99, category: "VIP" },
-  
-  // IMMOBILIER
   { id: 9, name: "Appartement Moderne Vue Mer", description: "Appartement lumineux avec vue mer, quartier residentiel premium.", price: 35.99, oldPrice: 39.99, category: "IMMOBILIER", discount: 10 },
   { id: 10, name: "Maison Moderne avec Garage", description: "Grande maison moderne avec garage double, ideale pour collectionneur.", price: 42.49, oldPrice: 49.99, category: "IMMOBILIER", discount: 15 },
   { id: 11, name: "Villa de Luxe sur les Hauteurs", description: "Villa de luxe avec piscine et vue panoramique, pour les plus riches.", price: 63.99, oldPrice: 79.99, category: "IMMOBILIER", discount: 20 },
   { id: 12, name: "Studio Centre-Ville", description: "Petit studio en plein centre-ville, ideal pour un debut de RP urbain.", price: 24.99, category: "IMMOBILIER" },
   { id: 13, name: "Maison de Banlieue", description: "Maison familiale en banlieue, parfaite pour un RP de vie quotidienne.", price: 34.99, category: "IMMOBILIER" },
   { id: 14, name: "Loft Industriel", description: "Loft style industriel, parfait pour artiste, DJ ou RP underground.", price: 40.49, oldPrice: 44.99, category: "IMMOBILIER", discount: 10 },
-
-  // PACKS DE DEPART
   { id: 15, name: "Pack Starter Civil", description: "Pack de depart civil : petit vehicule, tenue propre et base de materiel RP (sans armes).", price: 9.99, category: "PACK_DEPART" },
   { id: 16, name: "Pack Starter Entreprise", description: "Pack pour entrepreneur : vehicule adapte, tenue business et accessoires RP.", price: 13.49, oldPrice: 14.99, category: "PACK_DEPART", discount: 10 },
   { id: 17, name: "Pack Starter Gang", description: "Pack pour role criminel encadre : voiture de quartier, tenue et accessoires RP visuels (sans armes).", price: 15.29, oldPrice: 16.99, category: "PACK_DEPART", discount: 10 },
   { id: 18, name: "Pack Luxe RP", description: "Pack luxe : vehicule haut de gamme, tenue classe et elements visuels RP.", price: 21.24, oldPrice: 24.99, category: "PACK_DEPART", discount: 15 },
   { id: 19, name: "Pack Famille / Colocation", description: "Pack pour jouer en groupe : acces a une maison familiale et tenues coordonnees.", price: 17.99, oldPrice: 19.99, category: "PACK_DEPART", discount: 10 },
-
-  // SERVICES RP
   { id: 20, name: "Changement de Nom RP", description: "Permet de changer entierement votre identite RP (avec validation staff).", price: 6.99, category: "SERVICE" },
   { id: 21, name: "Changement de Plaque", description: "Personnalisez la plaque d'immatriculation d'un de vos vehicules.", price: 4.99, category: "SERVICE" },
   { id: 22, name: "Transfert de Vehicule", description: "Transfert d'un vehicule de votre personnage vers un autre joueur.", price: 5.99, category: "SERVICE" },
   { id: 23, name: "Changement d'Apparence", description: "Reset complet de l'apparence de votre personnage (skin, visage, base).", price: 7.19, oldPrice: 7.99, category: "SERVICE", discount: 10 },
   { id: 24, name: "Nettoyage Casier RP", description: "Nettoyage exceptionnel de votre casier RP sous conditions staff.", price: 8.49, oldPrice: 9.99, category: "SERVICE", discount: 15 },
-
-  // VEHICULES
-  { id: 25, name: "Audi RS6 Avant Performance", description: "Break sportif ultra polyvalent, parfait pour un RP de luxe et de vitesse.", price: 16.19, oldPrice: 17.99, category: "VEHICULE", discount: 10, featured: true },
-  { id: 26, name: "BMW M5 F90 Competition", description: "Berline sportive haut de gamme, ideale pour les chefs d'entreprise RP.", price: 16.14, oldPrice: 18.99, category: "VEHICULE", discount: 15, featured: true },
-  { id: 27, name: "Mercedes AMG GT63 S", description: "Coupe 4 portes d'exception, melange de luxe et d'agressivite.", price: 16.99, oldPrice: 19.99, category: "VEHICULE", discount: 15, featured: true },
-  { id: 28, name: "Audi R8 V10 Plus", description: "Supercar emblematique, tenue de route exceptionnelle et image prestige.", price: 17.59, oldPrice: 21.99, category: "VEHICULE", discount: 20, featured: true },
+  { id: 25, name: "Audi RS6 Avant Performance", description: "Break sportif ultra polyvalent, parfait pour un RP de luxe et de vitesse.", price: 16.19, oldPrice: 17.99, category: "VEHICULE", discount: 10 },
+  { id: 26, name: "BMW M5 F90 Competition", description: "Berline sportive haut de gamme, ideale pour les chefs d'entreprise RP.", price: 16.14, oldPrice: 18.99, category: "VEHICULE", discount: 15 },
+  { id: 27, name: "Mercedes AMG GT63 S", description: "Coupe 4 portes d'exception, melange de luxe et d'agressivite.", price: 16.99, oldPrice: 19.99, category: "VEHICULE", discount: 15 },
+  { id: 28, name: "Audi R8 V10 Plus", description: "Supercar emblematique, tenue de route exceptionnelle et image prestige.", price: 17.59, oldPrice: 21.99, category: "VEHICULE", discount: 20 },
   { id: 29, name: "Lamborghini Huracan EVO", description: "Supercar italienne ultra nerveuse pour les plus gros roles RP.", price: 19.99, oldPrice: 24.99, category: "VEHICULE", discount: 20 },
   { id: 30, name: "Lamborghini Urus", description: "SUV de luxe tres puissant, parfait pour un personnage influent.", price: 19.54, oldPrice: 22.99, category: "VEHICULE", discount: 15 },
   { id: 31, name: "Porsche 911 Turbo S", description: "Icone sportive, acceleration extreme et image parfaite pour les VIP.", price: 20.39, oldPrice: 23.99, category: "VEHICULE", discount: 15 },
@@ -93,403 +83,201 @@ const products: Product[] = [
 ];
 
 const categories = [
-  { id: "ALL", name: "Tout", icon: Filter },
-  { id: "VIP", name: "VIP & Rangs", icon: Crown },
-  { id: "IMMOBILIER", name: "Immobilier", icon: Home },
-  { id: "PACK_DEPART", name: "Packs de depart", icon: Package },
-  { id: "SERVICE", name: "Services RP", icon: Wrench },
-  { id: "VEHICULE", name: "Vehicules", icon: Car },
+  { id: "ALL", name: "Tout", count: products.length },
+  { id: "VIP", name: "VIP & Rangs", count: products.filter(p => p.category === "VIP").length },
+  { id: "IMMOBILIER", name: "Immobilier", count: products.filter(p => p.category === "IMMOBILIER").length },
+  { id: "PACK_DEPART", name: "Packs", count: products.filter(p => p.category === "PACK_DEPART").length },
+  { id: "SERVICE", name: "Services", count: products.filter(p => p.category === "SERVICE").length },
+  { id: "VEHICULE", name: "Vehicules", count: products.filter(p => p.category === "VEHICULE").length },
 ];
 
-type SortOption = "default" | "price_asc" | "price_desc" | "discount";
-
 export default function BoutiquePage() {
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [category, setCategory] = useState("ALL");
   const [user, setUser] = useState<{ id: number; username: string } | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("default");
+  const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sort, setSort] = useState("default");
+  const [promoOnly, setPromoOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [onlyPromo, setOnlyPromo] = useState(false);
 
   useEffect(() => {
-    fetchUser();
+    fetch("/api/auth/me", { credentials: "include" })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => data?.success && setUser(data.user))
+      .catch(() => {});
   }, []);
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setUser(data.user);
-        }
-      }
-    } catch (err) {}
-  };
-
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    // Filtre par categorie
-    if (selectedCategory !== "ALL") {
-      result = result.filter(p => p.category === selectedCategory);
+  const filtered = useMemo(() => {
+    let list = [...products];
+    if (category !== "ALL") list = list.filter(p => p.category === category);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
     }
+    if (minPrice) list = list.filter(p => p.price >= Number(minPrice));
+    if (maxPrice) list = list.filter(p => p.price <= Number(maxPrice));
+    if (promoOnly) list = list.filter(p => p.discount);
+    if (sort === "asc") list.sort((a, b) => a.price - b.price);
+    if (sort === "desc") list.sort((a, b) => b.price - a.price);
+    if (sort === "promo") list.sort((a, b) => (b.discount || 0) - (a.discount || 0));
+    return list;
+  }, [category, search, minPrice, maxPrice, sort, promoOnly]);
 
-    // Filtre par recherche
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        p.description.toLowerCase().includes(query)
-      );
-    }
-
-    // Filtre par prix min
-    if (priceMin) {
-      result = result.filter(p => p.price >= parseFloat(priceMin));
-    }
-
-    // Filtre par prix max
-    if (priceMax) {
-      result = result.filter(p => p.price <= parseFloat(priceMax));
-    }
-
-    // Filtre promo uniquement
-    if (onlyPromo) {
-      result = result.filter(p => p.discount && p.discount > 0);
-    }
-
-    // Tri
-    switch (sortBy) {
-      case "price_asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price_desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "discount":
-        result.sort((a, b) => (b.discount || 0) - (a.discount || 0));
-        break;
-    }
-
-    return result;
-  }, [selectedCategory, searchQuery, priceMin, priceMax, sortBy, onlyPromo]);
-
-  const handleBuy = (product: Product) => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    alert(`Achat de ${product.name} - PayPal sera bientot disponible`);
-  };
-
-  const getCategoryLabel = (cat: string) => {
-    const found = categories.find(c => c.id === cat);
-    return found ? found.name : cat;
-  };
-
-  const getCategoryColor = (cat: string) => {
-    switch (cat) {
-      case "VIP": return "text-yellow-400 bg-yellow-400/10 border-yellow-400/30";
-      case "IMMOBILIER": return "text-blue-400 bg-blue-400/10 border-blue-400/30";
-      case "PACK_DEPART": return "text-orange-400 bg-orange-400/10 border-orange-400/30";
-      case "SERVICE": return "text-purple-400 bg-purple-400/10 border-purple-400/30";
-      case "VEHICULE": return "text-green-400 bg-green-400/10 border-green-400/30";
-      default: return "text-gray-400 bg-gray-400/10 border-gray-400/30";
-    }
-  };
-
-  const resetFilters = () => {
-    setSearchQuery("");
-    setPriceMin("");
-    setPriceMax("");
-    setSortBy("default");
-    setOnlyPromo(false);
-  };
+  const buy = (p: Product) => user ? alert(`Achat: ${p.name}`) : setShowModal(true);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#080808]">
       <Navbar />
+      
+      <div className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4">
+          
+          {/* Header */}
+          <div className="border-b border-white/10 pb-6 mb-6">
+            <h1 className="text-3xl font-bold text-white">Boutique</h1>
+            <p className="text-gray-500 mt-1">Packs VIP, vehicules, immobilier et services</p>
+          </div>
 
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2a7cff]/5 via-transparent to-purple-500/5" />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 pt-28 pb-20">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-white mb-3">BOUTIQUE</h1>
-          <p className="text-gray-400 max-w-xl mx-auto">
-            Ameliorez votre experience RP avec nos packs VIP, vehicules, proprietes et services exclusifs.
-          </p>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="mb-8 space-y-4">
-          {/* Search Bar */}
-          <div className="flex gap-3">
+          {/* Search + Filters */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 type="text"
-                placeholder="Rechercher un produit..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[#111] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#2a7cff]/50"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Rechercher..."
+                className="w-full pl-10 pr-4 py-2.5 bg-[#0f0f0f] border border-white/10 rounded text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg border transition-colors ${
-                showFilters ? "bg-[#2a7cff] border-[#2a7cff] text-white" : "bg-[#111] border-white/10 text-gray-400 hover:text-white"
-              }`}
+              className={`px-4 py-2.5 border rounded text-sm font-medium flex items-center gap-2 ${showFilters ? 'bg-white text-black border-white' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/20'}`}
             >
-              <SlidersHorizontal size={20} />
+              <SlidersHorizontal size={16} />
               Filtres
             </button>
           </div>
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="bg-[#111] border border-white/10 rounded-lg p-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Prix Min */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Prix minimum</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={priceMin}
-                    onChange={(e) => setPriceMin(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[#2a7cff]/50"
-                  />
-                </div>
-
-                {/* Prix Max */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Prix maximum</label>
-                  <input
-                    type="number"
-                    placeholder="100"
-                    value={priceMax}
-                    onChange={(e) => setPriceMax(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[#2a7cff]/50"
-                  />
-                </div>
-
-                {/* Tri */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Trier par</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#2a7cff]/50"
-                  >
-                    <option value="default">Par defaut</option>
-                    <option value="price_asc">Prix croissant</option>
-                    <option value="price_desc">Prix decroissant</option>
-                    <option value="discount">Meilleures promos</option>
-                  </select>
-                </div>
-
-                {/* Options */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Options</label>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={onlyPromo}
-                        onChange={(e) => setOnlyPromo(e.target.checked)}
-                        className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#2a7cff] focus:ring-[#2a7cff]"
-                      />
-                      <span className="text-white text-sm">Promos uniquement</span>
-                    </label>
-                    <button
-                      onClick={resetFilters}
-                      className="text-sm text-gray-500 hover:text-white"
-                    >
-                      Reinitialiser
-                    </button>
-                  </div>
-                </div>
+            <div className="bg-[#0f0f0f] border border-white/10 rounded p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Prix min</label>
+                <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="0" className="w-full px-3 py-2 bg-[#080808] border border-white/10 rounded text-white text-sm focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Prix max</label>
+                <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="100" className="w-full px-3 py-2 bg-[#080808] border border-white/10 rounded text-white text-sm focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Trier</label>
+                <select value={sort} onChange={e => setSort(e.target.value)} className="w-full px-3 py-2 bg-[#080808] border border-white/10 rounded text-white text-sm focus:outline-none">
+                  <option value="default">Par defaut</option>
+                  <option value="asc">Prix croissant</option>
+                  <option value="desc">Prix decroissant</option>
+                  <option value="promo">Meilleures promos</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={promoOnly} onChange={e => setPromoOnly(e.target.checked)} className="w-4 h-4" />
+                  <span className="text-sm text-gray-400">Promos uniquement</span>
+                </label>
               </div>
             </div>
           )}
-        </div>
 
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = selectedCategory === cat.id;
-            return (
+          {/* Categories - Simple tabs */}
+          <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
+            {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                  isActive
-                    ? "bg-[#2a7cff] border-[#2a7cff] text-white"
-                    : "bg-[#111] border-white/10 text-gray-400 hover:bg-white/5 hover:text-white"
+                onClick={() => setCategory(cat.id)}
+                className={`px-4 py-2 rounded text-sm font-medium whitespace-nowrap transition-colors ${
+                  category === cat.id 
+                    ? 'bg-white text-black' 
+                    : 'bg-[#0f0f0f] text-gray-400 hover:text-white'
                 }`}
               >
-                <Icon size={16} />
-                <span className="text-sm font-medium">{cat.name}</span>
+                {cat.name}
+                <span className={`ml-1.5 text-xs ${category === cat.id ? 'text-black/60' : 'text-gray-600'}`}>
+                  {cat.count}
+                </span>
               </button>
-            );
-          })}
-        </div>
-
-        {/* Results Count */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">
-            {selectedCategory === "ALL" ? "Tous les produits" : getCategoryLabel(selectedCategory)}
-          </h2>
-          <span className="text-gray-500">{filteredProducts.length} produit{filteredProducts.length > 1 ? "s" : ""}</span>
-        </div>
-
-        {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-gray-500 mb-4">Aucun produit trouve</div>
-            <button onClick={resetFilters} className="text-[#2a7cff] hover:underline">
-              Reinitialiser les filtres
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onBuy={handleBuy}
-                user={user}
-                getCategoryLabel={getCategoryLabel}
-                getCategoryColor={getCategoryColor}
-              />
             ))}
           </div>
-        )}
+
+          {/* Results */}
+          <div className="text-sm text-gray-500 mb-4">
+            {filtered.length} resultat{filtered.length > 1 ? 's' : ''}
+          </div>
+
+          {/* Grid */}
+          {filtered.length === 0 ? (
+            <div className="text-center py-20 text-gray-500">Aucun produit trouve</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(product => (
+                <div key={product.id} className="bg-[#0f0f0f] border border-white/10 rounded overflow-hidden hover:border-white/20 transition-colors">
+                  {/* Top bar */}
+                  <div className="flex justify-between items-center px-3 py-2 border-b border-white/5">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">
+                      {categories.find(c => c.id === product.category)?.name}
+                    </span>
+                    {product.discount && (
+                      <span className="text-[10px] font-bold text-red-400">-{product.discount}%</span>
+                    )}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="text-white text-sm font-medium leading-tight mb-2 line-clamp-2">{product.name}</h3>
+                    <p className="text-gray-600 text-xs leading-relaxed mb-4 line-clamp-2">{product.description}</p>
+                    
+                    {/* Price */}
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <span className="text-lg font-bold text-white">{product.price.toFixed(2)}</span>
+                      <span className="text-xs text-gray-500">EUR</span>
+                      {product.oldPrice && (
+                        <span className="text-xs text-gray-600 line-through">{product.oldPrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                    
+                    {/* Button */}
+                    <button
+                      onClick={() => buy(product)}
+                      className={`w-full py-2 rounded text-sm font-medium transition-colors ${
+                        user 
+                          ? 'bg-white text-black hover:bg-gray-200' 
+                          : 'bg-white/5 text-gray-500 hover:bg-white/10'
+                      }`}
+                    >
+                      {user ? 'Acheter' : 'Connexion requise'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Login Modal */}
-      {showLoginModal && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowLoginModal(false)}
-        >
-          <div
-            className="bg-[#111] border border-white/10 rounded-xl p-6 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">Connexion requise</h3>
-              <button onClick={() => setShowLoginModal(false)} className="text-gray-400 hover:text-white">
-                <X size={20} />
-              </button>
-            </div>
-            <p className="text-gray-400 mb-4">Connectez-vous pour effectuer des achats.</p>
-            <div className="flex gap-3">
-              <Link href="/login" className="flex-1">
-                <button className="w-full bg-[#2a7cff] hover:bg-[#1e5fd4] text-white font-semibold py-2.5 rounded-lg transition-colors">
-                  Se connecter
-                </button>
-              </Link>
-              <Link href="/register" className="flex-1">
-                <button className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-lg border border-white/20 transition-colors">
-                  S'inscrire
-                </button>
-              </Link>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-[#0f0f0f] border border-white/10 rounded p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-white font-bold mb-2">Connexion requise</h3>
+            <p className="text-gray-500 text-sm mb-4">Connectez-vous pour acheter.</p>
+            <div className="flex gap-2">
+              <Link href="/login" className="flex-1"><button className="w-full py-2 bg-white text-black rounded text-sm font-medium">Connexion</button></Link>
+              <Link href="/register" className="flex-1"><button className="w-full py-2 bg-white/10 text-white rounded text-sm font-medium">Inscription</button></Link>
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function ProductCard({
-  product,
-  onBuy,
-  user,
-  getCategoryLabel,
-  getCategoryColor,
-}: {
-  product: Product;
-  onBuy: (product: Product) => void;
-  user: { id: number; username: string } | null;
-  getCategoryLabel: (cat: string) => string;
-  getCategoryColor: (cat: string) => string;
-}) {
-  return (
-    <div className="bg-[#111] border border-white/10 rounded-lg overflow-hidden hover:border-[#2a7cff]/30 transition-colors">
-      {/* Header */}
-      <div className="relative h-32 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent" />
-        
-        <div className="absolute top-2 left-2">
-          <span className={`text-xs font-medium px-2 py-1 rounded border ${getCategoryColor(product.category)}`}>
-            {getCategoryLabel(product.category)}
-          </span>
-        </div>
-
-        {product.discount && (
-          <div className="absolute top-2 right-2">
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-              -{product.discount}%
-            </span>
-          </div>
-        )}
-
-        <div className="text-white/10">
-          {product.category === "VIP" && <Crown size={48} />}
-          {product.category === "IMMOBILIER" && <Home size={48} />}
-          {product.category === "PACK_DEPART" && <Package size={48} />}
-          {product.category === "SERVICE" && <Wrench size={48} />}
-          {product.category === "VEHICULE" && <Car size={48} />}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="text-white font-medium text-sm mb-1 line-clamp-2 min-h-[40px]">
-          {product.name}
-        </h3>
-        <p className="text-gray-500 text-xs mb-3 line-clamp-2 min-h-[32px]">
-          {product.description}
-        </p>
-
-        <div className="flex items-end gap-2 mb-3">
-          <span className="text-xl font-bold text-[#ff6b35]">{product.price.toFixed(2)} EUR</span>
-          {product.oldPrice && (
-            <span className="text-gray-500 line-through text-xs">{product.oldPrice.toFixed(2)} EUR</span>
-          )}
-        </div>
-
-        <button
-          onClick={() => onBuy(product)}
-          className={`w-full py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2 ${
-            user
-              ? "bg-[#ff6b35] hover:bg-[#ff5722] text-white"
-              : "bg-white/5 text-gray-500 hover:bg-white/10"
-          }`}
-        >
-          {user ? (
-            <>
-              <ShoppingCart size={16} />
-              Acheter
-            </>
-          ) : (
-            <>
-              <Lock size={16} />
-              Connexion requise
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
