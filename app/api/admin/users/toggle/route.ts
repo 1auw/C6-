@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (currentUser.role !== "ADMIN") {
+    if (!['ADMIN', 'OWNER'].includes(currentUser.role)) {
       return NextResponse.json(
         { success: false, error: "Accès non autorisé" },
         { status: 403 }

@@ -87,6 +87,7 @@ enum Role {
   USER
   MODERATOR
   ADMIN
+  OWNER
 
   @@map("role")
 }

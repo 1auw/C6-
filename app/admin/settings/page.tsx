@@ -55,7 +55,8 @@ export default function AdminSettingsPage() {
 
       const meData = await meRes.json();
 
-      if (!meData.success || (meData.user.role !== "ADMIN" && meData.user.role !== "admin")) {
+      const role = meData.user.role.toUpperCase();
+      if (!meData.success || !['ADMIN', 'OWNER'].includes(role)) {
         router.push("/");
         return;
       }

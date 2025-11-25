@@ -13,7 +13,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  role: 'USER' | 'MODERATOR' | 'ADMIN';
+  role: 'USER' | 'MODERATOR' | 'ADMIN' | 'OWNER';
   isActive: boolean;
 }
 
@@ -83,11 +83,19 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 /**
- * Vérifier si l'utilisateur est admin
+ * Vérifier si l'utilisateur est admin ou owner
  */
 export async function isAdmin(): Promise<boolean> {
   const user = await getCurrentUser();
-  return user?.role === 'ADMIN';
+  return user?.role === 'ADMIN' || user?.role === 'OWNER';
+}
+
+/**
+ * Vérifier si l'utilisateur est owner
+ */
+export async function isOwner(): Promise<boolean> {
+  const user = await getCurrentUser();
+  return user?.role === 'OWNER';
 }
 
 /**
