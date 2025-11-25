@@ -63,79 +63,76 @@ export default function ForumPage() {
   const totalMessages = SECTIONS.reduce((a, s) => a + s.messages, 0);
 
   return (
-    <div className="min-h-screen bg-[#09090b]">
-      {/* Ambient */}
+    <div className="min-h-screen bg-dark-bg">
+      {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[150px]" />
+        <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[150px]" />
       </div>
 
       <div className="relative">
         {/* Hero */}
-        <div className="pt-32 pb-16 px-6 border-b border-zinc-800/50">
+        <div className="pt-32 pb-12 px-6 border-b border-white/5">
           <div className="max-w-4xl mx-auto">
-            <p className="text-indigo-400 text-sm font-medium tracking-[0.2em] uppercase mb-4">
+            <p className="text-primary font-semibold text-sm tracking-widest uppercase mb-4">
               Communaute
             </p>
-            <h1 className="text-5xl md:text-6xl font-extralight text-white tracking-tight mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Forum
             </h1>
-            <p className="text-zinc-500 text-lg max-w-xl leading-relaxed mb-10">
+            <p className="text-gray-400 text-lg max-w-xl mb-10">
               Rejoignez notre communaute et participez aux discussions.
             </p>
 
             {/* Stats */}
-            <div className="flex gap-12">
+            <div className="flex gap-10">
               <div>
-                <p className="text-3xl font-light text-white">{totalTopics}</p>
-                <p className="text-zinc-600 text-sm mt-1">Sujets</p>
+                <p className="text-2xl font-bold text-white">{totalTopics}</p>
+                <p className="text-gray-500 text-sm mt-1">Sujets</p>
               </div>
               <div>
-                <p className="text-3xl font-light text-white">{totalMessages}</p>
-                <p className="text-zinc-600 text-sm mt-1">Messages</p>
+                <p className="text-2xl font-bold text-white">{totalMessages}</p>
+                <p className="text-gray-500 text-sm mt-1">Messages</p>
               </div>
               <div>
-                <p className="text-3xl font-light text-white">247</p>
-                <p className="text-zinc-600 text-sm mt-1">Membres</p>
+                <p className="text-2xl font-bold text-white">247</p>
+                <p className="text-gray-500 text-sm mt-1">Membres</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Sections */}
-        <div className="px-6 py-16">
+        <div className="px-6 py-12">
           <div className="max-w-4xl mx-auto space-y-3">
             {SECTIONS.map((section, i) => (
-              <div
-                key={section.id}
-                className="group"
-              >
+              <div key={section.id} className="group">
                 <button
                   onClick={() => setExpanded(expanded === section.id ? null : section.id)}
-                  className="w-full text-left p-6 bg-zinc-900/30 hover:bg-zinc-900/50 border border-zinc-800/50 rounded-2xl transition-all duration-300"
+                  className="w-full text-left p-5 glass rounded-xl hover:border-primary/20 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-2">
-                        <span className="text-zinc-700 text-xs font-mono">0{i + 1}</span>
-                        <h3 className="text-lg text-white font-light tracking-wide">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-primary/50 text-xs font-mono">0{i + 1}</span>
+                        <h3 className="text-lg text-white font-semibold">
                           {section.name}
                         </h3>
                       </div>
-                      <p className="text-zinc-600 text-sm pl-10">
+                      <p className="text-gray-500 text-sm pl-7">
                         {section.desc}
                       </p>
                     </div>
-                    <div className="flex items-center gap-8 text-right">
+                    <div className="flex items-center gap-6 text-right">
                       <div>
-                        <p className="text-white text-sm">{section.topics}</p>
-                        <p className="text-zinc-700 text-xs">sujets</p>
+                        <p className="text-white text-sm font-semibold">{section.topics}</p>
+                        <p className="text-gray-600 text-xs">sujets</p>
                       </div>
                       <div>
-                        <p className="text-white text-sm">{section.messages}</p>
-                        <p className="text-zinc-700 text-xs">messages</p>
+                        <p className="text-white text-sm font-semibold">{section.messages}</p>
+                        <p className="text-gray-600 text-xs">messages</p>
                       </div>
-                      <div className="w-8 h-8 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-600">
-                        <span className={`transition-transform duration-300 ${expanded === section.id ? 'rotate-45' : ''}`}>+</span>
+                      <div className="w-8 h-8 rounded-lg bg-dark-lighter flex items-center justify-center text-gray-500 border border-white/10">
+                        <span className={`text-lg transition-transform ${expanded === section.id ? 'rotate-45' : ''}`}>+</span>
                       </div>
                     </div>
                   </div>
@@ -143,20 +140,20 @@ export default function ForumPage() {
 
                 {/* Expanded content */}
                 {expanded === section.id && (
-                  <div className="mt-3 p-8 bg-zinc-900/20 border border-zinc-800/30 rounded-2xl">
+                  <div className="mt-3 p-8 bg-dark-card/50 border border-white/5 rounded-xl">
                     <div className="text-center py-8">
-                      <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-6">
-                        <span className="text-zinc-600 text-2xl">∅</span>
+                      <div className="w-16 h-16 rounded-full bg-dark-lighter flex items-center justify-center mx-auto mb-6 border border-white/10">
+                        <span className="text-gray-600 text-xl">0</span>
                       </div>
-                      <p className="text-zinc-600 mb-6">Aucun sujet pour le moment</p>
+                      <p className="text-gray-500 mb-6">Aucun sujet pour le moment</p>
                       
                       {user ? (
-                        <button className="px-8 py-3 bg-white text-zinc-900 rounded-full text-sm font-medium hover:bg-zinc-100 transition-colors">
+                        <button className="px-6 py-3 bg-primary hover:bg-primary-light text-white rounded-lg text-sm font-semibold transition-colors">
                           Creer le premier sujet
                         </button>
                       ) : (
                         <Link href="/login">
-                          <button className="px-8 py-3 bg-zinc-800 text-zinc-400 rounded-full text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors">
+                          <button className="px-6 py-3 bg-dark-lighter hover:bg-dark-card text-gray-400 hover:text-white rounded-lg text-sm font-semibold transition-colors border border-white/10">
                             Connectez-vous pour participer
                           </button>
                         </Link>
@@ -170,22 +167,22 @@ export default function ForumPage() {
         </div>
 
         {/* Guidelines */}
-        <div className="px-6 pb-32">
+        <div className="px-6 pb-24">
           <div className="max-w-4xl mx-auto">
-            <div className="p-8 bg-zinc-900/20 border border-zinc-800/30 rounded-2xl">
-              <h3 className="text-white font-light text-lg mb-6">Regles de la communaute</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+            <div className="glass rounded-xl p-6">
+              <h3 className="text-white font-semibold mb-4">Regles de la communaute</h3>
+              <div className="grid md:grid-cols-2 gap-3">
                 {[
                   "Respectez tous les membres sans exception",
                   "Pas de spam ni de contenu inapproprie",
                   "Restez dans le sujet de chaque section",
                   "Utilisez un langage correct et courtois"
                 ].map((rule, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <span className="w-6 h-6 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-600 text-xs">
+                  <div key={i} className="flex items-center gap-3 p-3 bg-dark-bg/50 rounded-lg">
+                    <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
                       {i + 1}
                     </span>
-                    <span className="text-zinc-500 text-sm">{rule}</span>
+                    <span className="text-gray-400 text-sm">{rule}</span>
                   </div>
                 ))}
               </div>
