@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Vote, Gift, ExternalLink, Lock, Check, Star, Crown, Car } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
 const SITES = [
@@ -49,7 +48,6 @@ export default function VotePage() {
       <style>{`*, *::before, *::after { animation: none !important; transition: none !important; }`}</style>
       
       <div className="min-h-screen bg-dark-bg">
-        <Navbar />
         
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary-neon/5" />

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { ShoppingCart, Search, Lock, Crown, Home, Package, Wrench, Car } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
 const PRODUCTS = [
@@ -97,7 +96,6 @@ export default function BoutiquePage() {
       `}</style>
       
       <div className="min-h-screen bg-dark-bg">
-        <Navbar />
         
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary-neon/5" />
