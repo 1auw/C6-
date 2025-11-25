@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ShoppingCart, Search, Lock, Crown, Home, Package, Wrench, Car } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
@@ -55,15 +56,14 @@ const PRODUCTS = [
   { id: 48, name: "Taxi Pro", desc: "Job legal", price: 7.99, cat: "AUTO" },
 ];
 
-const CATS = ["TOUT", "VIP", "IMMO", "PACK", "SERV", "AUTO"];
-const CAT_NAMES: Record<string, string> = {
-  TOUT: "Tout",
-  VIP: "VIP & Rangs",
-  IMMO: "Immobilier", 
-  PACK: "Packs",
-  SERV: "Services",
-  AUTO: "Vehicules"
-};
+const CATS = [
+  { id: "TOUT", name: "Tout", icon: null },
+  { id: "VIP", name: "VIP", icon: Crown },
+  { id: "IMMO", name: "Immobilier", icon: Home },
+  { id: "PACK", name: "Packs", icon: Package },
+  { id: "SERV", name: "Services", icon: Wrench },
+  { id: "AUTO", name: "Vehicules", icon: Car },
+];
 
 export default function BoutiquePage() {
   const [cat, setCat] = useState("TOUT");
@@ -78,155 +78,200 @@ export default function BoutiquePage() {
       .catch(() => {});
   }, []);
 
-  const list = PRODUCTS.filter(p => {
+  const isVisible = (p: typeof PRODUCTS[0]) => {
     if (cat !== "TOUT" && p.cat !== cat) return false;
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
-  });
+  };
+
+  const visibleCount = PRODUCTS.filter(isVisible).length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000" }}>
-      <Navbar />
+    <>
+      {/* Desactive toutes les animations globalement */}
+      <style>{`
+        *, *::before, *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      `}</style>
       
-      <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 1200, margin: "0 auto", padding: "100px 20px 60px" }}>
+      <div className="min-h-screen bg-dark-bg">
+        <Navbar />
         
-        <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Boutique</h1>
-        <p style={{ color: "#666", marginBottom: 30 }}>Packs, vehicules et services</p>
-
-        {/* Search */}
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Rechercher..."
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            padding: "10px 16px",
-            background: "#111",
-            border: "1px solid #222",
-            borderRadius: 6,
-            color: "#fff",
-            fontSize: 14,
-            marginBottom: 20,
-            outline: "none"
-          }}
-        />
-
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 30, flexWrap: "wrap" }}>
-          {CATS.map(c => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              style={{
-                padding: "8px 16px",
-                background: cat === c ? "#fff" : "#111",
-                color: cat === c ? "#000" : "#888",
-                border: "none",
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 500,
-                cursor: "pointer"
-              }}
-            >
-              {CAT_NAMES[c]}
-            </button>
-          ))}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary-neon/5" />
         </div>
 
-        {/* Count */}
-        <p style={{ color: "#444", fontSize: 13, marginBottom: 20 }}>{list.length} produits</p>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-28 pb-20">
+          <div className="mb-10">
+            <h1 className="text-4xl font-black text-white mb-2">Boutique</h1>
+            <p className="text-gray-400">Packs VIP, vehicules, immobilier et services</p>
+          </div>
 
-        {/* Grid */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", 
-          gap: 16 
-        }}>
-          {list.map(p => (
-            <div key={p.id} style={{
-              background: "#0a0a0a",
-              border: "1px solid #1a1a1a",
-              borderRadius: 8,
-              padding: 16
-            }}>
-              <div style={{ fontSize: 10, color: "#555", marginBottom: 8, textTransform: "uppercase" }}>
-                {CAT_NAMES[p.cat]}
-              </div>
-              <div style={{ color: "#fff", fontSize: 14, fontWeight: 500, marginBottom: 4 }}>{p.name}</div>
-              <div style={{ color: "#555", fontSize: 12, marginBottom: 12 }}>{p.desc}</div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <span style={{ color: "#fff", fontSize: 18, fontWeight: 700 }}>{p.price.toFixed(2)}</span>
-                <span style={{ color: "#555", fontSize: 12 }}>EUR</span>
-                {p.old && <span style={{ color: "#444", fontSize: 12, textDecoration: "line-through" }}>{p.old}</span>}
-              </div>
+          <div className="relative max-w-md mb-8">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Rechercher..."
+              className="w-full pl-11 pr-4 py-3 bg-dark-card border border-white/10 rounded-xl text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-primary/50"
+            />
+          </div>
+
+          {/* Categories - boutons simples */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {CATS.map(c => (
               <button
-                onClick={() => user ? alert("Achat: " + p.name) : setModal(true)}
+                key={c.id}
+                onClick={() => setCat(c.id)}
                 style={{
-                  width: "100%",
-                  padding: "10px",
-                  background: user ? "#fff" : "#1a1a1a",
-                  color: user ? "#000" : "#555",
-                  border: "none",
-                  borderRadius: 6,
-                  fontSize: 13,
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  fontSize: "14px",
                   fontWeight: 500,
-                  cursor: "pointer"
+                  border: "1px solid",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  backgroundColor: cat === c.id ? "#1a5cff" : "#12121a",
+                  color: cat === c.id ? "#fff" : "#888",
+                  borderColor: cat === c.id ? "#1a5cff" : "rgba(255,255,255,0.1)",
                 }}
               >
-                {user ? "Acheter" : "Connexion requise"}
+                {c.icon && <c.icon size={16} />}
+                {c.name}
               </button>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <p className="text-gray-500 text-sm mb-6">{visibleCount} produits</p>
+
+          {/* Grid avec style inline pour eviter tout recalcul */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: "16px"
+          }}>
+            {PRODUCTS.map(p => {
+              const visible = isVisible(p);
+              return (
+                <div 
+                  key={p.id}
+                  style={{
+                    display: visible ? "block" : "none",
+                    backgroundColor: "#12121a",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    overflow: "hidden"
+                  }}
+                >
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 16px",
+                    borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    backgroundColor: "#1a1a25"
+                  }}>
+                    <span style={{ fontSize: "10px", color: "#666", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      {CATS.find(c => c.id === p.cat)?.name}
+                    </span>
+                    {p.old && (
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: "#ef4444" }}>
+                        -{Math.round((1 - p.price / p.old) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div style={{ padding: "16px" }}>
+                    <h3 style={{ color: "#fff", fontSize: "14px", fontWeight: 500, marginBottom: "4px" }}>{p.name}</h3>
+                    <p style={{ color: "#666", fontSize: "12px", marginBottom: "16px" }}>{p.desc}</p>
+                    
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "16px" }}>
+                      <span style={{ fontSize: "20px", fontWeight: 700, color: "#fff" }}>{p.price.toFixed(2)}</span>
+                      <span style={{ fontSize: "12px", color: "#666" }}>EUR</span>
+                      {p.old && (
+                        <span style={{ fontSize: "12px", color: "#444", textDecoration: "line-through" }}>{p.old.toFixed(2)}</span>
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={() => user ? alert("Achat: " + p.name) : setModal(true)}
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        backgroundColor: user ? "#1a5cff" : "rgba(255,255,255,0.05)",
+                        color: user ? "#fff" : "#666"
+                      }}
+                    >
+                      {user ? <><ShoppingCart size={16} /> Acheter</> : <><Lock size={16} /> Connexion requise</>}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {visibleCount === 0 && (
+            <div style={{ textAlign: "center", padding: "80px 0", color: "#666" }}>Aucun produit trouve</div>
+          )}
         </div>
 
-        {list.length === 0 && (
-          <div style={{ textAlign: "center", padding: 60, color: "#444" }}>Aucun produit</div>
-        )}
-      </div>
-
-      {/* Modal */}
-      {modal && (
-        <div 
-          onClick={() => setModal(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 100
-          }}
-        >
+        {modal && (
           <div 
-            onClick={e => e.stopPropagation()}
+            onClick={() => setModal(false)}
             style={{
-              background: "#111",
-              border: "1px solid #222",
-              borderRadius: 8,
-              padding: 24,
-              width: 320
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.9)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              padding: "16px"
             }}
           >
-            <div style={{ color: "#fff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Connexion requise</div>
-            <div style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>Connectez-vous pour acheter</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Link href="/login" style={{ flex: 1 }}>
-                <button style={{ width: "100%", padding: 10, background: "#fff", color: "#000", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                  Connexion
-                </button>
-              </Link>
-              <Link href="/register" style={{ flex: 1 }}>
-                <button style={{ width: "100%", padding: 10, background: "#222", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                  Inscription
-                </button>
-              </Link>
+            <div 
+              onClick={e => e.stopPropagation()}
+              style={{
+                backgroundColor: "#12121a",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "16px",
+                padding: "24px",
+                width: "100%",
+                maxWidth: "360px"
+              }}
+            >
+              <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Connexion requise</h3>
+              <p style={{ color: "#888", fontSize: "14px", marginBottom: "16px" }}>Connectez-vous pour acheter</p>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Link href="/login" style={{ flex: 1 }}>
+                  <button style={{ width: "100%", padding: "12px", backgroundColor: "#1a5cff", color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 500, cursor: "pointer" }}>
+                    Connexion
+                  </button>
+                </Link>
+                <Link href="/register" style={{ flex: 1 }}>
+                  <button style={{ width: "100%", padding: "12px", backgroundColor: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "14px", fontWeight: 500, cursor: "pointer" }}>
+                    Inscription
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
