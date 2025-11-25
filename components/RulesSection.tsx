@@ -1,372 +1,435 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Shield, Users, Ban, Car, MessageSquare, Shirt, Coins, UserPlus, Skull } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, AlertTriangle, Skull, Car, Users, Shield, Crosshair, Ban, MessageSquare } from 'lucide-react';
 
 interface RuleCategory {
   id: string;
   title: string;
   icon: any;
+  color: string;
+  rules: {
+    title: string;
+    content: string;
+    sanctions?: string;
+  }[];
 }
 
-interface RuleSection {
-  title: string;
-  icon: any;
-  rules: string[];
-  alerts?: { type: 'warning' | 'danger' | 'info'; text: string }[];
-}
-
-const categories: RuleCategory[] = [
-  { id: 'general', title: 'Général', icon: Shield },
-  { id: 'event', title: 'Event', icon: Users },
-  { id: 'staff', title: 'Staff', icon: MessageSquare },
-  { id: 'legal', title: 'Légal', icon: Car },
-  { id: 'illegal', title: 'Illégal', icon: Skull },
-  { id: 'cheat', title: 'Cheat & Modding', icon: Ban },
+const rulesData: RuleCategory[] = [
+  {
+    id: 'general',
+    title: 'Règles Générales',
+    icon: Shield,
+    color: '#3b82f6',
+    rules: [
+      {
+        title: 'Respect & Comportement',
+        content: 'Tout comportement toxique, insulte, discrimination (racisme, homophobie, sexisme) est strictement interdit. Le respect entre joueurs est obligatoire, que ce soit en jeu ou sur Discord.',
+        sanctions: 'Warn → Kick → Ban temporaire → Ban définitif'
+      },
+      {
+        title: 'Microphone obligatoire',
+        content: 'Un microphone fonctionnel est requis pour jouer sur le serveur. Vous devez être capable de communiquer vocalement en français.',
+        sanctions: 'Kick jusqu\'à résolution'
+      },
+      {
+        title: 'Bug exploit',
+        content: 'L\'exploitation de bugs, glitchs ou failles du serveur est interdite. Tout bug découvert doit être signalé au staff via ticket Discord.',
+        sanctions: 'Ban définitif sans avertissement'
+      },
+      {
+        title: 'Compte & Identité',
+        content: 'Chaque joueur ne peut posséder qu\'un seul compte. Le partage de compte est interdit. Votre pseudonyme doit être réaliste (Prénom Nom).',
+        sanctions: 'Ban définitif des comptes concernés'
+      },
+      {
+        title: 'Publicité interdite',
+        content: 'Toute forme de publicité pour d\'autres serveurs, Discord ou communautés est interdite.',
+        sanctions: 'Ban définitif'
+      }
+    ]
+  },
+  {
+    id: 'rp',
+    title: 'Règles RolePlay',
+    icon: Users,
+    color: '#8b5cf6',
+    rules: [
+      {
+        title: 'RDM (Random Death Match)',
+        content: 'Tuer un joueur sans aucune raison RP valable est interdit. Vous devez avoir une interaction RP préalable avant toute action hostile (minimum 30 secondes d\'échange).',
+        sanctions: '1er: Warn | 2ème: Ban 1 jour | 3ème: Ban 3 jours | 4ème: Ban déf'
+      },
+      {
+        title: 'VDM (Vehicle Death Match)',
+        content: 'Écraser volontairement un joueur avec un véhicule sans raison RP est interdit. Les véhicules ne sont pas des armes.',
+        sanctions: '1er: Warn | 2ème: Ban 1 jour | 3ème: Ban 3 jours | 4ème: Ban déf'
+      },
+      {
+        title: 'Métagaming',
+        content: 'Utiliser des informations obtenues hors-jeu (Discord, stream, vocal externe) dans le RP est interdit. Ce que votre personnage ne sait pas, vous ne le savez pas.',
+        sanctions: 'Warn → Ban temporaire → Ban définitif'
+      },
+      {
+        title: 'Powergaming',
+        content: 'Forcer des actions RP sur un joueur sans son consentement est interdit (ex: "/me le tue d\'un coup"). Les actions doivent être réalistes et laisser une chance à l\'autre joueur.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'Fear RP (Valeur de la vie)',
+        content: 'Votre personnage doit valoriser sa vie. Sous la menace d\'une arme, vous devez coopérer. Pas de comportement héroïque irréaliste quand vous êtes en désavantage numérique ou sous la menace.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'New Life Rule (NLR)',
+        content: 'Après votre mort, vous oubliez les 15 dernières minutes de votre vie. Vous ne pouvez pas revenir sur les lieux de votre mort pendant 15 minutes ni vous venger.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'Safe Zone',
+        content: 'Les zones vertes (hôpital, commissariat, spawn) sont des safe zones. Aucune action hostile n\'y est autorisée. Vous ne pouvez pas fuir vers une safe zone lors d\'une action.',
+        sanctions: 'Warn → Ban temporaire'
+      }
+    ]
+  },
+  {
+    id: 'cvc',
+    title: 'Règles CVC (Combat)',
+    icon: Crosshair,
+    color: '#ef4444',
+    rules: [
+      {
+        title: 'Engagement CVC',
+        content: 'Le CVC (Combat vs Combat) peut être engagé après annonce vocale claire ("C\'est le bail", "On engage", etc.) ou après une menace explicite avec arme visible. L\'annonce doit être audible par la cible.',
+        sanctions: 'Warn si non-respect du protocole'
+      },
+      {
+        title: 'Zone Rouge',
+        content: 'Dans les zones rouges (quartiers chauds, zones de deal), le CVC peut être engagé plus rapidement. Une simple présence hostile suffit à justifier l\'engagement après avertissement.',
+        sanctions: 'Application normale des sanctions RDM hors zone'
+      },
+      {
+        title: 'Limite de participants',
+        content: 'Maximum 6 joueurs par camp lors d\'une fusillade. Les renforts ne peuvent arriver qu\'après 5 minutes du début de l\'action. Pas de "zerg" autorisé.',
+        sanctions: 'Warn → Ban temporaire pour le groupe'
+      },
+      {
+        title: 'Cooldown entre actions',
+        content: 'Après une action CVC majeure (fusillade, braquage), un cooldown de 30 minutes s\'applique avant de pouvoir relancer une action contre le même groupe.',
+        sanctions: 'Warn → Annulation de l\'action'
+      },
+      {
+        title: 'Armes lourdes',
+        content: 'Les armes lourdes (AK, M4, etc.) ne peuvent être utilisées que lors d\'actions préparées (braquages, guerre de gang). Pas d\'arme lourde pour les embrouilles de rue.',
+        sanctions: 'Confiscation + Warn'
+      },
+      {
+        title: 'Drive-by',
+        content: 'Les drive-by (tirer depuis un véhicule en mouvement) sont autorisés uniquement si le CVC est déjà engagé. Pas de drive-by pour initier un combat.',
+        sanctions: 'Traité comme RDM/VDM'
+      }
+    ]
+  },
+  {
+    id: 'vehicules',
+    title: 'Règles Véhicules',
+    icon: Car,
+    color: '#f59e0b',
+    rules: [
+      {
+        title: 'Conduite réaliste',
+        content: 'La conduite doit rester cohérente. Pas de conduite GTA style (sauts, conduite sur les toits, etc.). Les accidents doivent être RP (appel dépanneuse, ambulance si blessé).',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'Car Jack',
+        content: 'Voler un véhicule occupé nécessite une interaction RP. Vous devez menacer le conducteur et lui laisser le temps de sortir. Pas de car jack en zone safe.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'PIT & Bélier',
+        content: 'Les PIT (faire tourner un véhicule) et béliers sont réservés aux forces de l\'ordre en poursuite active et aux situations de braquage/enlèvement. Interdit pour les civils sans raison RP valable.',
+        sanctions: 'Warn + réparation du véhicule adverse'
+      },
+      {
+        title: 'Véhicules premium',
+        content: 'Les véhicules de luxe et sportifs attirent l\'attention. Les utiliser pour des activités illégales augmente le risque d\'être repéré par la police.',
+        sanctions: 'Conséquences RP'
+      }
+    ]
+  },
+  {
+    id: 'illegal',
+    title: 'Activités Illégales',
+    icon: Skull,
+    color: '#dc2626',
+    rules: [
+      {
+        title: 'Braquages',
+        content: 'Les braquages nécessitent minimum 2 joueurs. Négociations obligatoires avec la police avant toute action. Maximum 1 braquage de banque par jour par groupe. Pas de braquage dans les 30 min avant restart.',
+        sanctions: 'Annulation du braquage + Warn'
+      },
+      {
+        title: 'Prises d\'otage',
+        content: 'Maximum 2 otages par action. L\'otage doit avoir du temps de RP (pas de kill immédiat). La demande de rançon doit être réaliste (max 50 000$). Pas d\'otage de moins de 15 minutes de connexion.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'Trafic de drogue',
+        content: 'Le deal doit se faire de manière RP et discrète. Pas de vente en zone safe ou devant la police. Les points de deal chauds sont en zone rouge.',
+        sanctions: 'Conséquences RP (prison)'
+      },
+      {
+        title: 'Gangs & Organisations',
+        content: 'Les gangs doivent être validés par le staff. Maximum 15 membres par gang. Les guerres de territoire doivent être déclarées et validées. Pas d\'alliance dépassant 20 personnes.',
+        sanctions: 'Dissolution du gang si abus'
+      },
+      {
+        title: 'Loot après kill',
+        content: 'Vous pouvez récupérer : armes, munitions, drogue, argent sale. Maximum 5 000$ d\'argent propre. Interdit de prendre : téléphone, papiers, clés de propriété.',
+        sanctions: 'Remboursement + Warn'
+      },
+      {
+        title: 'Torture & Exécution',
+        content: 'Les scènes de torture doivent avoir l\'accord OOC de la victime. Les exécutions nécessitent une raison RP majeure et l\'approbation du staff.',
+        sanctions: 'Ban temporaire → Ban définitif'
+      }
+    ]
+  },
+  {
+    id: 'staff',
+    title: 'Règles Staff',
+    icon: MessageSquare,
+    color: '#06b6d4',
+    rules: [
+      {
+        title: 'Respect du staff',
+        content: 'Les décisions du staff sont finales. Tout irrespect, menace ou harcèlement envers un membre du staff est sanctionné immédiatement.',
+        sanctions: 'Ban définitif'
+      },
+      {
+        title: 'Tickets & Réclamations',
+        content: 'Pour toute réclamation, ouvrez un ticket sur Discord avec preuves (clip vidéo obligatoire). Les tickets sans preuve seront fermés.',
+        sanctions: '-'
+      },
+      {
+        title: 'Intervention staff',
+        content: 'Quand un staff intervient, le RP est en pause. Ne fuyez pas, ne continuez pas l\'action. Attendez la fin de l\'intervention.',
+        sanctions: 'Warn → Ban temporaire'
+      },
+      {
+        title: 'Faux reports',
+        content: 'Les faux reports ou reports abusifs pour nuire à un joueur sont interdits.',
+        sanctions: 'Warn → Ban temporaire du système de report'
+      }
+    ]
+  },
+  {
+    id: 'cheat',
+    title: 'Anti-Cheat',
+    icon: Ban,
+    color: '#7c3aed',
+    rules: [
+      {
+        title: 'Logiciels interdits',
+        content: 'Tout logiciel de triche, mod menu, aimbot, wallhack, speedhack ou exploit est strictement interdit. L\'anti-cheat détecte la majorité des cheats.',
+        sanctions: 'Ban définitif sans appel'
+      },
+      {
+        title: 'Macros & Scripts',
+        content: 'Les macros de tir, bunny hop scripts ou tout automatisme donnant un avantage sont interdits.',
+        sanctions: 'Ban définitif'
+      },
+      {
+        title: 'Mods graphiques',
+        content: 'Seuls les mods graphiques purement esthétiques sont autorisés (ENB, ReShade). Tout mod donnant un avantage visuel (supprimer les buissons, etc.) est interdit.',
+        sanctions: 'Ban temporaire → Ban définitif'
+      },
+      {
+        title: 'Money glitch',
+        content: 'Toute exploitation de faille pour générer de l\'argent illégitimement est interdite et sera détectée.',
+        sanctions: 'Wipe du personnage + Ban'
+      }
+    ]
+  }
 ];
-
-const rulesContent: Record<string, RuleSection[]> = {
-  general: [
-    {
-      title: 'Règles générales',
-      icon: Shield,
-      rules: [
-        'Le respect est la base de notre communauté. Tout comportement toxique, insulte ou discrimination sera sanctionné immédiatement.',
-        'Le métagaming est formellement interdit. Les informations obtenues en dehors du jeu ne doivent pas influencer vos actions en RP.',
-        'Le RolePlay doit toujours être privilégié. Chaque action doit avoir une logique et une cohérence.',
-        'Les noms de personnages doivent être réalistes et cohérents avec l\'univers RP.',
-      ],
-    },
-    {
-      title: 'Vêtements & Équipement',
-      icon: Shirt,
-      rules: [
-        'Tous les vêtements et casques considérés comme des "tank" sont interdits.',
-        'Si vous jouez en équipe, vous devez porter les mêmes vêtements.',
-      ],
-      alerts: [
-        { type: 'warning', text: 'L\'usage abusif de vêtements tank entraînera des sanctions.' },
-      ],
-    },
-  ],
-  event: [
-    {
-      title: 'Événements',
-      icon: Users,
-      rules: [
-        'Les événements sont organisés régulièrement par le staff.',
-        'Tous les joueurs peuvent y participer sauf mention contraire.',
-        'Les règles spécifiques de chaque événement seront annoncées avant le début.',
-        'Le fair-play est de rigueur pendant les événements.',
-      ],
-    },
-  ],
-  staff: [
-    {
-      title: 'Comportement envers les staffs',
-      icon: MessageSquare,
-      rules: [
-        'Le respect envers les membres du staff est obligatoire en toutes circonstances.',
-        'Les décisions du staff sont définitives. En cas de désaccord, ouvrez un ticket Discord.',
-        'Ne sollicitez pas les staffs en jeu pour des questions administratives, utilisez Discord.',
-        'Les insultes ou menaces envers un membre du staff entraînent un bannissement immédiat.',
-      ],
-      alerts: [
-        { type: 'danger', text: 'Tout manque de respect envers le staff sera sanctionné sévèrement.' },
-      ],
-    },
-  ],
-  legal: [
-    {
-      title: 'Activités légales',
-      icon: Car,
-      rules: [
-        'Les métiers légaux doivent être exercés avec sérieux et cohérence RP.',
-        'Le respect du code de la route est obligatoire pour les activités légales.',
-        'Les interactions avec la police doivent être roleplayées correctement.',
-        'Les commerces et entreprises doivent respecter les prix du marché.',
-      ],
-    },
-  ],
-  illegal: [
-    {
-      title: 'Activités illégales',
-      icon: Skull,
-      rules: [
-        'Les activités illégales doivent être jouées avec prudence et réalisme.',
-        'Les braquages nécessitent un RP de qualité et respectent un cooldown.',
-        'Les fusillades doivent avoir une raison RP valable et être précédées d\'interactions.',
-        'Un criminel ne s\'affiche pas en public et prend des précautions.',
-      ],
-      alerts: [
-        { type: 'warning', text: 'Les actions illégales sans RP seront sanctionnées.' },
-        { type: 'danger', text: 'Le RDM (Random Death Match) est strictement interdit.' },
-      ],
-    },
-    {
-      title: 'Loot',
-      icon: Coins,
-      rules: [
-        'Vous pouvez looter les armes, munitions et argent sale d\'un joueur mort.',
-        'Maximum 5.000$ d\'argent propre peuvent être volés.',
-        'Il est interdit de looter les gilets, bandages et soins.',
-      ],
-    },
-  ],
-  cheat: [
-    {
-      title: 'Cheat & Modding',
-      icon: Ban,
-      rules: [
-        'Tout usage de logiciel tiers, cheat ou mod menu est strictement interdit.',
-        'Les mods graphiques qui donnent un avantage sont interdits.',
-        'L\'exploitation de bugs est sanctionnable.',
-        'Toute tentative de triche entraîne un bannissement permanent.',
-      ],
-      alerts: [
-        { type: 'danger', text: 'Le bannissement pour triche est permanent et sans appel.' },
-      ],
-    },
-  ],
-};
 
 export default function RulesSection() {
   const [activeCategory, setActiveCategory] = useState('general');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [openSections, setOpenSections] = useState<Set<number>>(new Set());
+  const [openRules, setOpenRules] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const handleSearch = (e: any) => {
-      setSearchQuery(e.detail.toLowerCase());
-    };
-
-    const handleCategoryChange = (e: any) => {
-      const data = e.detail;
-      
-      // Si c'est un simple string (ancien format), on le traite
-      if (typeof data === 'string') {
-        setActiveCategory(data);
-        setSearchQuery('');
-      } else {
-        // Nouveau format avec catégorie et section à ouvrir
-        setActiveCategory(data.category);
-        setSearchQuery('');
-        
-        // Ouvrir automatiquement la section spécifiée
-        if (data.openSection !== undefined) {
-          setTimeout(() => {
-            const newOpenSections = new Set<number>();
-            newOpenSections.add(data.openSection);
-            setOpenSections(newOpenSections);
-          }, 100); // Petit délai pour laisser le temps à la catégorie de changer
-        }
-      }
-    };
-
-    window.addEventListener('searchRules', handleSearch);
-    window.addEventListener('changeCategory', handleCategoryChange);
-    return () => {
-      window.removeEventListener('searchRules', handleSearch);
-      window.removeEventListener('changeCategory', handleCategoryChange);
-    };
-  }, []);
-
-  // Filtrer le contenu en fonction de la recherche
-  const getFilteredContent = () => {
-    if (!searchQuery) {
-      return rulesContent[activeCategory] || [];
-    }
-
-    // Rechercher dans toutes les catégories
-    const allSections: RuleSection[] = [];
-    Object.values(rulesContent).forEach(sections => {
-      sections.forEach(section => {
-        const matchTitle = section.title.toLowerCase().includes(searchQuery);
-        const matchRules = section.rules.some(rule => 
-          rule.toLowerCase().includes(searchQuery)
-        );
-        const matchAlerts = section.alerts?.some(alert => 
-          alert.text.toLowerCase().includes(searchQuery)
-        );
-
-        if (matchTitle || matchRules || matchAlerts) {
-          allSections.push(section);
-        }
-      });
-    });
-
-    return allSections;
-  };
-
-  const filteredContent = getFilteredContent();
-
-  const toggleSection = (index: number) => {
-    const newOpenSections = new Set(openSections);
-    if (newOpenSections.has(index)) {
-      newOpenSections.delete(index);
+  const toggleRule = (ruleId: string) => {
+    const newOpen = new Set(openRules);
+    if (newOpen.has(ruleId)) {
+      newOpen.delete(ruleId);
     } else {
-      newOpenSections.add(index);
+      newOpen.add(ruleId);
     }
-    setOpenSections(newOpenSections);
+    setOpenRules(newOpen);
   };
+
+  const currentCategory = rulesData.find(c => c.id === activeCategory);
 
   return (
-    <section id="rules" className="relative bg-gradient-to-b from-dark-bg via-dark-lighter to-dark-bg">
-      {/* Sélecteur ORIGINAL - Style navigation verticale */}
-      <div className="relative w-full border-b border-white/10 bg-dark-card/95 backdrop-blur-md z-50">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-center gap-2 overflow-x-auto">
-            {categories.map((category, idx) => {
-              const Icon = category.icon;
-              const isActive = activeCategory === category.id;
-              
-              return (
-                <div key={category.id} className="flex items-center relative z-50">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('CLIC DÉTECTÉ sur:', category.id);
-                      setActiveCategory(category.id);
-                      setOpenSections(new Set());
-                    }}
-                    className={`
-                      px-6 py-3 flex items-center gap-2 font-bold text-sm uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer
-                      ${isActive 
-                        ? 'bg-primary text-white' 
-                        : 'bg-transparent text-gray-500 hover:text-white hover:bg-white/5'
-                      }
-                    `}
-                    style={{ position: 'relative', zIndex: 100 }}
-                  >
-                    <Icon size={18} />
-                    {category.title}
-                  </button>
-                  {idx < categories.length - 1 && (
-                    <div className="w-px h-6 bg-white/10 mx-1" />
-                  )}
-                </div>
-              );
-            })}
+    <section className="min-h-screen bg-[#09090b]">
+      {/* Header */}
+      <div className="border-b border-white/5 bg-[#0c0c0f]">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Règlement du Serveur</h1>
+              <p className="text-gray-500 text-sm mt-1">Central 6RP • Serveur RP + CVC</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <AlertTriangle size={14} className="text-yellow-500" />
+              Dernière mise à jour : Novembre 2025
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Background minimaliste et élégant */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Dégradé doux du haut vers le bas */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d15] via-dark-bg to-[#0d0d15]" />
-        
-        {/* Halos lumineux très subtils */}
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-primary-neon/5 rounded-full blur-[140px]" />
-        
-        {/* Grain/Noise subtil pour texture */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }} />
-      </div>
-      
-      <div className="w-full relative z-10 py-16 px-6 max-w-[1400px] mx-auto">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Sidebar - Catégories */}
+          <div className="lg:w-64 flex-shrink-0">
+            <div className="lg:sticky lg:top-24 space-y-1">
+              {rulesData.map((category) => {
+                const Icon = category.icon;
+                const isActive = activeCategory === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
+                      isActive
+                        ? 'bg-white/5 text-white'
+                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <Icon 
+                      size={18} 
+                      style={{ color: isActive ? category.color : undefined }}
+                    />
+                    <span className="text-sm font-medium">{category.title}</span>
+                    {isActive && (
+                      <div 
+                        className="ml-auto w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        {/* Accordéons simples */}
-        <motion.div 
-          key={`category-${activeCategory}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-3"
-        >
-          {filteredContent.length > 0 ? filteredContent.map((section, index) => {
-            const Icon = section.icon;
-            const isOpen = openSections.has(index);
-            
-            return (
+          {/* Contenu principal */}
+          <div className="flex-1 min-w-0">
+            {currentCategory && (
               <motion.div
-                key={index}
+                key={currentCategory.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="bg-dark-lighter/80 backdrop-blur-sm border border-white/20 overflow-hidden"
+                transition={{ duration: 0.2 }}
               >
-                {/* Header cliquable */}
-                <button
-                  onClick={() => toggleSection(index)}
-                  className="w-full p-5 flex items-center justify-between hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon size={20} className="text-primary" />
-                    <span className="text-lg font-bold text-white">{section.title}</span>
+                {/* Titre de la catégorie */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div 
+                    className="p-2 rounded-lg"
+                    style={{ backgroundColor: `${currentCategory.color}20` }}
+                  >
+                    <currentCategory.icon 
+                      size={24} 
+                      style={{ color: currentCategory.color }}
+                    />
                   </div>
-                  <svg
-                    className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">{currentCategory.title}</h2>
+                    <p className="text-gray-500 text-sm">{currentCategory.rules.length} règles</p>
+                  </div>
+                </div>
 
-                {/* Contenu */}
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="border-t border-white/10"
-                  >
-                    <div className="p-5 space-y-4 bg-dark-bg/40">
-                      {section.rules.map((rule, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <span className="text-primary font-bold">{i + 1}.</span>
-                          <p className="text-gray-300 leading-relaxed flex-1">{rule}</p>
-                        </div>
-                      ))}
-
-                      {section.alerts && section.alerts.length > 0 && (
-                        <div className="pt-4 space-y-2">
-                          {section.alerts.map((alert, i) => (
-                            <div
-                              key={i}
-                              className={`
-                                p-3 border-l-4 flex items-start gap-2
-                                ${alert.type === 'danger' ? 'bg-red-500/10 border-red-500 text-red-300' : ''}
-                                ${alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500 text-yellow-300' : ''}
-                                ${alert.type === 'info' ? 'bg-blue-500/10 border-blue-500 text-blue-300' : ''}
-                              `}
+                {/* Liste des règles */}
+                <div className="space-y-3">
+                  {currentCategory.rules.map((rule, index) => {
+                    const ruleId = `${currentCategory.id}-${index}`;
+                    const isOpen = openRules.has(ruleId);
+                    
+                    return (
+                      <div
+                        key={ruleId}
+                        className="border border-white/5 rounded-lg overflow-hidden bg-[#0c0c0f]"
+                      >
+                        <button
+                          onClick={() => toggleRule(ruleId)}
+                          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span 
+                              className="text-xs font-mono px-2 py-1 rounded"
+                              style={{ 
+                                backgroundColor: `${currentCategory.color}15`,
+                                color: currentCategory.color 
+                              }}
                             >
-                              <span>⚠️</span>
-                              <p className="text-sm">{alert.text}</p>
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span className="font-medium text-white">{rule.title}</span>
+                          </div>
+                          <ChevronDown 
+                            size={18} 
+                            className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="border-t border-white/5"
+                          >
+                            <div className="px-5 py-4 space-y-4">
+                              <p className="text-gray-400 leading-relaxed">
+                                {rule.content}
+                              </p>
+                              {rule.sanctions && (
+                                <div className="flex items-start gap-2 p-3 bg-red-500/5 border border-red-500/10 rounded-lg">
+                                  <AlertTriangle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">
+                                      Sanctions
+                                    </span>
+                                    <p className="text-gray-400 text-sm mt-1">{rule.sanctions}</p>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
+                          </motion.div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </motion.div>
-            );
-          }) : (
-            <div className="text-center py-12 bg-dark-lighter/80 border border-white/20 p-8">
-              <p className="text-gray-400">Aucune règle trouvée</p>
-            </div>
-          )}
-        </motion.div>
+            )}
+          </div>
+        </div>
 
-        {/* Note sanctions */}
-        <div className="mt-8">
-          <div className="bg-dark-lighter/80 backdrop-blur-sm border border-primary/40 p-5">
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">⚠️</span>
-              <div>
-                <p className="text-gray-300">
-                  Le non-respect de ces règles peut entraîner des sanctions allant de l'avertissement au <span className="text-red-400 font-bold">bannissement permanent</span>.
-                </p>
-              </div>
+        {/* Footer d'avertissement */}
+        <div className="mt-12 p-6 border border-yellow-500/20 bg-yellow-500/5 rounded-lg">
+          <div className="flex items-start gap-4">
+            <AlertTriangle size={24} className="text-yellow-500 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-yellow-500">Avertissement Important</h3>
+              <p className="text-gray-400 mt-2 text-sm leading-relaxed">
+                Ce règlement peut être modifié à tout moment par l'équipe de modération. 
+                L'ignorance du règlement n'est pas une excuse valable. En jouant sur Central 6RP, 
+                vous acceptez de respecter l'ensemble de ces règles. Le staff se réserve le droit 
+                de sanctionner tout comportement nuisible même s'il n'est pas explicitement mentionné ici.
+              </p>
             </div>
           </div>
         </div>
