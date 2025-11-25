@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
       const data = await res.json();
 
       if (data.success) {
-        setMessage("✅ Paramètres enregistrés avec succès !");
+        setMessage("Paramètres enregistrés avec succès !");
         setTimeout(() => setMessage(""), 3000);
       } else {
         setError(data.error || "Erreur lors de l'enregistrement");
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
           </button>
 
           <h1 className="text-4xl font-bold text-white mb-2">
-            ⚙️ Paramètres du serveur
+            Paramètres du serveur
           </h1>
           <p className="text-gray-400 mb-8">
             Configuration et paramètres de Central 6RP
@@ -303,7 +303,7 @@ export default function AdminSettingsPage() {
 
           {/* Informations système */}
           <div className="bg-white/[0.03] backdrop-blur-sm border border-white/10 p-6 rounded-sm">
-            <h2 className="text-xl font-bold text-white mb-4">📋 Informations système</h2>
+            <h2 className="text-xl font-bold text-white mb-4">Informations système</h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="text-gray-400">Version du site</span>
@@ -319,7 +319,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-gray-400">Statut</span>
-                <span className="text-green-400 font-medium">✅ Opérationnel</span>
+                <span className="text-green-400 font-medium">Opérationnel</span>
               </div>
             </div>
           </div>

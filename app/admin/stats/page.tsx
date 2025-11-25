@@ -109,7 +109,7 @@ export default function AdminStatsPage() {
           </button>
 
           <h1 className="text-4xl font-bold text-white mb-2">
-            📈 Statistiques du serveur
+            Statistiques du serveur
           </h1>
           <p className="text-gray-400 mb-8">
             Vue d'ensemble des données de Central 6RP
@@ -205,7 +205,7 @@ export default function AdminStatsPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Statut</span>
-                      <span className="text-green-400 font-bold">✅ En ligne</span>
+                      <span className="text-green-400 font-bold">En ligne</span>
                     </div>
                   </div>
                 </div>

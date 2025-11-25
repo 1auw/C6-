@@ -10,13 +10,13 @@ export const siteConfig = {
   
   // Liens sociaux et connexion
   links: {
-    discord: "https://discord.gg/central6rp", // ⚠️ REMPLACEZ par votre vrai lien Discord
+    discord: "https://discord.gg/central6rp", // REMPLACEZ par votre vrai lien Discord
     fivem: "fivem://connect/cfx.re/join/drvao5",
   },
   
   // Logo (navbar)
   logo: {
-    src: "/logo.png",  // ⚠️ Placez votre logo ici
+    src: "/logo.png",  // Placez votre logo ici
     alt: "Central 6RP",
     height: 60, // Hauteur en pixels (modifiable)
   },

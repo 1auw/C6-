@@ -261,7 +261,6 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.02 }}
                 className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-all"
               >
-                <span className="text-2xl mb-2 block">📜</span>
                 <h3 className="text-white font-semibold">Règlement</h3>
               </motion.div>
             </Link>
@@ -271,7 +270,6 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.02 }}
                 className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-all"
               >
-                <span className="text-2xl mb-2 block">💬</span>
                 <h3 className="text-white font-semibold">Contact</h3>
               </motion.div>
             </Link>
@@ -281,7 +279,6 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.02 }}
                 className="bg-dark-card/50 backdrop-blur-xl border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-[#5865F2]/50 transition-all"
               >
-                <span className="text-2xl mb-2 block">🎮</span>
                 <h3 className="text-white font-semibold">Discord</h3>
               </motion.div>
             </a>

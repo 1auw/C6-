@@ -143,7 +143,7 @@ export default function AdminUsersPage() {
           </button>
 
           <h1 className="text-4xl font-bold text-white mb-2">
-            👥 Gestion des utilisateurs
+            Gestion des utilisateurs
           </h1>
           <p className="text-gray-400 mb-8">
             Gérez les comptes utilisateurs de Central 6RP
